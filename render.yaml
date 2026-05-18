@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: bharatmitra-citizen-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn citizen_api:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATA_GOV_KEY
+        value: 579b464db66ec23bdd000001f18a062496a0471962be96a13085378d
+      - key: NVIDIA_API_KEY
+        sync: false   # set this manually in Render dashboard
+    healthCheckPath: /health
+    autoDeploy: true
