@@ -1,0 +1,3 @@
+## 2024-05-24 - Flutter Accessibility: Icon-Only Buttons
+**Learning:** In Flutter, icon-only `IconButton` widgets require a `tooltip` property to be accessible. This property serves dual purposes: it provides a visual text label on hover/long-press for sighted users, and it acts as the semantic label (ARIA equivalent) for screen readers like TalkBack/VoiceOver. Without it, screen readers will just announce 'button', leaving users blind to its function.
+**Action:** Always add a descriptive `tooltip` string when implementing an `IconButton` or any other icon-only interactive element in Flutter apps.

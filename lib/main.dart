@@ -302,9 +302,8 @@ class _OobeWizardState extends State<_OobeWizard> {
                     lang,
                     style: TextStyle(
                       color: selected ? const Color(0xFFE85D04) : Colors.white,
-                      fontWeight: selected
-                          ? FontWeight.w700
-                          : FontWeight.normal,
+                      fontWeight:
+                          selected ? FontWeight.w700 : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -421,9 +420,8 @@ class _OobeWizardState extends State<_OobeWizard> {
                     occ,
                     style: TextStyle(
                       color: selected ? const Color(0xFFE85D04) : Colors.white,
-                      fontWeight: selected
-                          ? FontWeight.w700
-                          : FontWeight.normal,
+                      fontWeight:
+                          selected ? FontWeight.w700 : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -1166,9 +1164,8 @@ class _AssistantHomePageState extends State<AssistantHomePage> {
           caseSensitive: false,
         ).firstMatch(prompt);
         final crop = cropMatch?.group(0) ?? 'rice';
-        final state = _profileState.isNotEmpty
-            ? _profileState
-            : 'Andhra Pradesh';
+        final state =
+            _profileState.isNotEmpty ? _profileState : 'Andhra Pradesh';
         response = await http
             .post(
               Uri.parse('$baseUrl/mandi/advice'),
@@ -1206,7 +1203,9 @@ class _AssistantHomePageState extends State<AssistantHomePage> {
             .timeout(const Duration(seconds: 15));
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         final aqi = data['aqi']?.toString() ?? '—';
-        final plan = data['activity_plan']?.toString() ?? data['guidance']?.toString() ?? 'No plan returned.';
+        final plan = data['activity_plan']?.toString() ??
+            data['guidance']?.toString() ??
+            'No plan returned.';
         setState(() {
           _backendOk = true;
           _backendStatus = 'AQI in $city: $aqi';
@@ -1215,9 +1214,8 @@ class _AssistantHomePageState extends State<AssistantHomePage> {
       } else if (label.contains('flood') ||
           label.contains('risk') ||
           label.contains('disaster')) {
-        final state = _profileState.isNotEmpty
-            ? _profileState
-            : 'Andhra Pradesh';
+        final state =
+            _profileState.isNotEmpty ? _profileState : 'Andhra Pradesh';
         response = await http
             .post(
               Uri.parse('$baseUrl/flood/risk'),
@@ -1247,9 +1245,8 @@ class _AssistantHomePageState extends State<AssistantHomePage> {
               headers: {'Content-Type': 'application/json'},
               body: jsonEncode({
                 'issue': issue,
-                'location': _profileState.isNotEmpty
-                    ? _profileState
-                    : 'village',
+                'location':
+                    _profileState.isNotEmpty ? _profileState : 'village',
               }),
             )
             .timeout(const Duration(seconds: 15));
@@ -1314,9 +1311,8 @@ class _AssistantHomePageState extends State<AssistantHomePage> {
       setState(() {
         _backendOk = true;
         _backendStatus = 'AI response from ${data['model'] ?? mode}';
-        _backendAnswer = (data['answer'] ?? data['content'] ?? '')
-            .toString()
-            .trim();
+        _backendAnswer =
+            (data['answer'] ?? data['content'] ?? '').toString().trim();
       });
     } catch (error) {
       setState(() {
@@ -1710,14 +1706,12 @@ Return concise structured next steps, missing documents, and which details to as
                 fillColor: const Color(0xFF1E2D40),
                 hintText: 'Search: widow, farmer, student, housing...',
                 hintStyle: const TextStyle(color: Color(0xFF6B7280)),
-                prefixIcon:
-                    const Icon(Icons.search, color: Color(0xFF9CA3AF)),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF9CA3AF)),
                 suffixIcon: _schemeSearch.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear,
-                            color: Color(0xFF9CA3AF)),
-                        onPressed: () =>
-                            setState(() => _schemeSearch = ''),
+                        icon: const Icon(Icons.clear, color: Color(0xFF9CA3AF)),
+                        tooltip: 'Clear search',
+                        onPressed: () => setState(() => _schemeSearch = ''),
                       )
                     : null,
                 border: OutlineInputBorder(
@@ -1742,18 +1736,14 @@ Return concise structured next steps, missing documents, and which details to as
                       child: FilterChip(
                         label: const Text('For You'),
                         selected: _showOnlyMatched,
-                        onSelected: (v) =>
-                            setState(() => _showOnlyMatched = v),
-                        backgroundColor:
-                            const Color(0xFF1E2D40),
-                        selectedColor: const Color(0xFFE85D04)
-                            .withValues(alpha: 0.3),
-                        labelStyle: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12),
+                        onSelected: (v) => setState(() => _showOnlyMatched = v),
+                        backgroundColor: const Color(0xFF1E2D40),
+                        selectedColor:
+                            const Color(0xFFE85D04).withValues(alpha: 0.3),
+                        labelStyle:
+                            const TextStyle(color: Colors.white, fontSize: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                     ),
@@ -1767,15 +1757,13 @@ Return concise structured next steps, missing documents, and which details to as
                     (SchemeTag.disability, 'Disability'),
                     (SchemeTag.rural, 'Rural'),
                     (SchemeTag.lowIncome, 'Low Income'),
-                  ]
-                      .map((pair) {
+                  ].map((pair) {
                     final (tag, label) = pair;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: FilterChip(
                         label: Text(label),
-                        selected:
-                            _selectedTags.contains(tag),
+                        selected: _selectedTags.contains(tag),
                         onSelected: (v) {
                           setState(() {
                             if (v) {
@@ -1785,16 +1773,13 @@ Return concise structured next steps, missing documents, and which details to as
                             }
                           });
                         },
-                        backgroundColor:
-                            const Color(0xFF1E2D40),
-                        selectedColor: const Color(0xFFE85D04)
-                            .withValues(alpha: 0.3),
-                        labelStyle: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12),
+                        backgroundColor: const Color(0xFF1E2D40),
+                        selectedColor:
+                            const Color(0xFFE85D04).withValues(alpha: 0.3),
+                        labelStyle:
+                            const TextStyle(color: Colors.white, fontSize: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                     );
@@ -1809,8 +1794,7 @@ Return concise structured next steps, missing documents, and which details to as
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
               child: Row(
                 children: [
-                  const Icon(Icons.star,
-                      color: Color(0xFFE85D04), size: 14),
+                  const Icon(Icons.star, color: Color(0xFFE85D04), size: 14),
                   const SizedBox(width: 4),
                   Text(
                     '${matchedNames.length} match your profile',
@@ -1830,87 +1814,57 @@ Return concise structured next steps, missing documents, and which details to as
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.search_off,
-                            size: 48,
-                            color: Color(0xFF374151)),
+                            size: 48, color: Color(0xFF374151)),
                         const SizedBox(height: 12),
                         const Text(
                           'No schemes found',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16),
+                          style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _selectedTags.isEmpty &&
-                                  query.isEmpty
+                          _selectedTags.isEmpty && query.isEmpty
                               ? 'Try changing filters'
                               : 'Try different keywords',
                           style: const TextStyle(
-                              color: Color(0xFF9CA3AF),
-                              fontSize: 12),
+                              color: Color(0xFF9CA3AF), fontSize: 12),
                         ),
-                        if (_selectedTags.isNotEmpty ||
-                            query.isNotEmpty)
+                        if (_selectedTags.isNotEmpty || query.isNotEmpty)
                           Padding(
-                            padding:
-                                const EdgeInsets.only(
-                                    top: 12),
+                            padding: const EdgeInsets.only(top: 12),
                             child: TextButton(
-                              onPressed: () => setState(
-                                  () {
-                                _selectedTags
-                                    .clear();
-                                _schemeSearch =
-                                    '';
+                              onPressed: () => setState(() {
+                                _selectedTags.clear();
+                                _schemeSearch = '';
                               }),
-                              child: const Text(
-                                  'Clear filters'),
+                              child: const Text('Clear filters'),
                             ),
                           ),
                       ],
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(
-                        16, 0, 16, 24),
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                     itemCount: filtered.length,
                     itemBuilder: (ctx, i) {
                       final scheme = filtered[i];
                       final match = _matches
-                          .where((m) =>
-                              m.scheme.name ==
-                              scheme.name)
+                          .where((m) => m.scheme.name == scheme.name)
                           .firstOrNull;
                       return Padding(
-                        padding:
-                            const EdgeInsets.only(
-                                bottom: 10),
+                        padding: const EdgeInsets.only(bottom: 10),
                         child: match != null
                             ? _SchemeCard(
                                 match: match,
-                                saved: _savedSchemes
-                                    .contains(
-                                        scheme
-                                            .name),
-                                onSave: () =>
-                                    _toggleSaved(
-                                        scheme),
+                                saved: _savedSchemes.contains(scheme.name),
+                                onSave: () => _toggleSaved(scheme),
                                 onOpenOfficial: () =>
-                                    _openOfficialPortal(
-                                        scheme),
+                                    _openOfficialPortal(scheme),
                               )
                             : _SchemeListTile(
                                 scheme: scheme,
-                                saved: _savedSchemes
-                                    .contains(
-                                        scheme
-                                            .name),
-                                onSave: () =>
-                                    _toggleSaved(
-                                        scheme),
-                                onOpen: () =>
-                                    _openOfficialPortal(
-                                        scheme),
+                                saved: _savedSchemes.contains(scheme.name),
+                                onSave: () => _toggleSaved(scheme),
+                                onOpen: () => _openOfficialPortal(scheme),
                               ),
                       );
                     },
@@ -2209,6 +2163,7 @@ Return concise structured next steps, missing documents, and which details to as
                               color: Color(0xFF9CA3AF),
                               size: 18,
                             ),
+                            tooltip: 'Open official portal',
                             onPressed: () {
                               final scheme = schemes
                                   .where((s) => s.name == name)
@@ -3190,6 +3145,7 @@ class _SchemeListTile extends StatelessWidget {
               saved ? Icons.bookmark : Icons.bookmark_border,
               color: saved ? const Color(0xFFE85D04) : const Color(0xFF9CA3AF),
             ),
+            tooltip: saved ? 'Remove from saved' : 'Save scheme',
             onPressed: onSave,
           ),
           IconButton(
@@ -3198,6 +3154,7 @@ class _SchemeListTile extends StatelessWidget {
               color: Color(0xFF9CA3AF),
               size: 18,
             ),
+            tooltip: 'Open official portal',
             onPressed: onOpen,
           ),
         ],
@@ -3404,6 +3361,7 @@ class _DigiLockerAuthSheetState extends State<_DigiLockerAuthSheet> {
               const Spacer(),
               IconButton(
                 icon: const Icon(Icons.close, color: Color(0xFF9CA3AF)),
+                tooltip: 'Close',
                 onPressed: () => Navigator.pop(context),
               ),
             ],
@@ -3789,9 +3747,8 @@ class _BackendAiCard extends StatelessWidget {
                   width: 10,
                   height: 10,
                   decoration: BoxDecoration(
-                    color: ok
-                        ? const Color(0xFF22C55E)
-                        : const Color(0xFFEF4444),
+                    color:
+                        ok ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -3975,7 +3932,7 @@ class _SectionHeader extends StatelessWidget {
               ],
             ),
           ),
-          ?action,
+          if (action != null) action!,
         ],
       ),
     );
@@ -4181,10 +4138,10 @@ class BharatModuleAdvisor {
     final band = aqi == null
         ? 'your local AQI'
         : aqi > 200
-        ? 'very poor AQI $aqi'
-        : aqi > 100
-        ? 'moderate to poor AQI $aqi'
-        : 'acceptable AQI $aqi';
+            ? 'very poor AQI $aqi'
+            : aqi > 100
+                ? 'moderate to poor AQI $aqi'
+                : 'acceptable AQI $aqi';
     return BharatModule(
       title: 'AQI activity planner',
       category: 'Daily safety',
