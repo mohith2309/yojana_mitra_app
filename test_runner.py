@@ -32,7 +32,7 @@ def run_cmd(cmd, label):
         return False
 
 def main():
-    project = "/Users/mohith/Downloads/yojana_mitra_app"
+    project = "/app"
     os.chdir(project)
 
     results = {}
