@@ -1206,7 +1206,10 @@ class _AssistantHomePageState extends State<AssistantHomePage> {
             .timeout(const Duration(seconds: 15));
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         final aqi = data['aqi']?.toString() ?? '—';
-        final plan = data['activity_plan']?.toString() ?? data['guidance']?.toString() ?? 'No plan returned.';
+        final plan =
+            data['activity_plan']?.toString() ??
+            data['guidance']?.toString() ??
+            'No plan returned.';
         setState(() {
           _backendOk = true;
           _backendStatus = 'AQI in $city: $aqi';
@@ -1632,16 +1635,17 @@ Return concise structured next steps, missing documents, and which details to as
     final all = schemes;
 
     // Filter by search query
-    var filtered = (query.isEmpty
-            ? all
-            : all.where(
-                (s) =>
-                    s.name.toLowerCase().contains(query) ||
-                    s.category.toLowerCase().contains(query) ||
-                    s.benefit.toLowerCase().contains(query) ||
-                    s.keywords.any((k) => k.contains(query)),
-              ))
-        .toList();
+    var filtered =
+        (query.isEmpty
+                ? all
+                : all.where(
+                    (s) =>
+                        s.name.toLowerCase().contains(query) ||
+                        s.category.toLowerCase().contains(query) ||
+                        s.benefit.toLowerCase().contains(query) ||
+                        s.keywords.any((k) => k.contains(query)),
+                  ))
+            .toList();
 
     // Filter by selected tags (AND logic - all selected tags must match)
     if (_selectedTags.isNotEmpty) {
@@ -1682,8 +1686,10 @@ Return concise structured next steps, missing documents, and which details to as
                 ),
                 const Spacer(),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE85D04).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
@@ -1710,14 +1716,11 @@ Return concise structured next steps, missing documents, and which details to as
                 fillColor: const Color(0xFF1E2D40),
                 hintText: 'Search: widow, farmer, student, housing...',
                 hintStyle: const TextStyle(color: Color(0xFF6B7280)),
-                prefixIcon:
-                    const Icon(Icons.search, color: Color(0xFF9CA3AF)),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF9CA3AF)),
                 suffixIcon: _schemeSearch.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear,
-                            color: Color(0xFF9CA3AF)),
-                        onPressed: () =>
-                            setState(() => _schemeSearch = ''),
+                        icon: const Icon(Icons.clear, color: Color(0xFF9CA3AF)),
+                        onPressed: () => setState(() => _schemeSearch = ''),
                       )
                     : null,
                 border: OutlineInputBorder(
@@ -1742,18 +1745,17 @@ Return concise structured next steps, missing documents, and which details to as
                       child: FilterChip(
                         label: const Text('For You'),
                         selected: _showOnlyMatched,
-                        onSelected: (v) =>
-                            setState(() => _showOnlyMatched = v),
-                        backgroundColor:
-                            const Color(0xFF1E2D40),
-                        selectedColor: const Color(0xFFE85D04)
-                            .withValues(alpha: 0.3),
+                        onSelected: (v) => setState(() => _showOnlyMatched = v),
+                        backgroundColor: const Color(0xFF1E2D40),
+                        selectedColor: const Color(
+                          0xFFE85D04,
+                        ).withValues(alpha: 0.3),
                         labelStyle: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12),
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                     ),
@@ -1767,15 +1769,13 @@ Return concise structured next steps, missing documents, and which details to as
                     (SchemeTag.disability, 'Disability'),
                     (SchemeTag.rural, 'Rural'),
                     (SchemeTag.lowIncome, 'Low Income'),
-                  ]
-                      .map((pair) {
+                  ].map((pair) {
                     final (tag, label) = pair;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: FilterChip(
                         label: Text(label),
-                        selected:
-                            _selectedTags.contains(tag),
+                        selected: _selectedTags.contains(tag),
                         onSelected: (v) {
                           setState(() {
                             if (v) {
@@ -1785,16 +1785,16 @@ Return concise structured next steps, missing documents, and which details to as
                             }
                           });
                         },
-                        backgroundColor:
-                            const Color(0xFF1E2D40),
-                        selectedColor: const Color(0xFFE85D04)
-                            .withValues(alpha: 0.3),
+                        backgroundColor: const Color(0xFF1E2D40),
+                        selectedColor: const Color(
+                          0xFFE85D04,
+                        ).withValues(alpha: 0.3),
                         labelStyle: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12),
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
                     );
@@ -1809,8 +1809,7 @@ Return concise structured next steps, missing documents, and which details to as
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
               child: Row(
                 children: [
-                  const Icon(Icons.star,
-                      color: Color(0xFFE85D04), size: 14),
+                  const Icon(Icons.star, color: Color(0xFFE85D04), size: 14),
                   const SizedBox(width: 4),
                   Text(
                     '${matchedNames.length} match your profile',
@@ -1829,89 +1828,71 @@ Return concise structured next steps, missing documents, and which details to as
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.search_off,
-                            size: 48,
-                            color: Color(0xFF374151)),
+                        const Icon(
+                          Icons.search_off,
+                          size: 48,
+                          color: Color(0xFF374151),
+                        ),
                         const SizedBox(height: 12),
                         const Text(
                           'No schemes found',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16),
+                          style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          _selectedTags.isEmpty &&
-                                  query.isEmpty
+                          _selectedTags.isEmpty && query.isEmpty
                               ? 'Try changing filters'
                               : 'Try different keywords',
                           style: const TextStyle(
-                              color: Color(0xFF9CA3AF),
-                              fontSize: 12),
+                            color: Color(0xFF9CA3AF),
+                            fontSize: 12,
+                          ),
                         ),
-                        if (_selectedTags.isNotEmpty ||
-                            query.isNotEmpty)
+                        if (_selectedTags.isNotEmpty || query.isNotEmpty)
                           Padding(
-                            padding:
-                                const EdgeInsets.only(
-                                    top: 12),
+                            padding: const EdgeInsets.only(top: 12),
                             child: TextButton(
-                              onPressed: () => setState(
-                                  () {
-                                _selectedTags
-                                    .clear();
-                                _schemeSearch =
-                                    '';
+                              onPressed: () => setState(() {
+                                _selectedTags.clear();
+                                _schemeSearch = '';
                               }),
-                              child: const Text(
-                                  'Clear filters'),
+                              child: const Text('Clear filters'),
                             ),
                           ),
                       ],
                     ),
                   )
-                : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(
-                        16, 0, 16, 24),
-                    itemCount: filtered.length,
-                    itemBuilder: (ctx, i) {
-                      final scheme = filtered[i];
-                      final match = _matches
-                          .where((m) =>
-                              m.scheme.name ==
-                              scheme.name)
-                          .firstOrNull;
-                      return Padding(
-                        padding:
-                            const EdgeInsets.only(
-                                bottom: 10),
-                        child: match != null
-                            ? _SchemeCard(
-                                match: match,
-                                saved: _savedSchemes
-                                    .contains(
-                                        scheme
-                                            .name),
-                                onSave: () =>
-                                    _toggleSaved(
-                                        scheme),
-                                onOpenOfficial: () =>
-                                    _openOfficialPortal(
-                                        scheme),
-                              )
-                            : _SchemeListTile(
-                                scheme: scheme,
-                                saved: _savedSchemes
-                                    .contains(
-                                        scheme
-                                            .name),
-                                onSave: () =>
-                                    _toggleSaved(
-                                        scheme),
-                                onOpen: () =>
-                                    _openOfficialPortal(
-                                        scheme),
-                              ),
+                : Builder(
+                    builder: (ctx) {
+                      // ⚡ Bolt: Cache scheme matches in a hash map to replace O(n^2) nested loop with O(n) lookup during scroll
+                      // Using reversed loop to ensure the first match is retained, preserving .firstOrNull behavior
+                      final matchesMap = {
+                        for (final m in _matches.reversed) m.scheme.name: m,
+                      };
+                      return ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                        itemCount: filtered.length,
+                        itemBuilder: (ctx, i) {
+                          final scheme = filtered[i];
+                          final match = matchesMap[scheme.name];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: match != null
+                                ? _SchemeCard(
+                                    match: match,
+                                    saved: _savedSchemes.contains(scheme.name),
+                                    onSave: () => _toggleSaved(scheme),
+                                    onOpenOfficial: () =>
+                                        _openOfficialPortal(scheme),
+                                  )
+                                : _SchemeListTile(
+                                    scheme: scheme,
+                                    saved: _savedSchemes.contains(scheme.name),
+                                    onSave: () => _toggleSaved(scheme),
+                                    onOpen: () => _openOfficialPortal(scheme),
+                                  ),
+                          );
+                        },
                       );
                     },
                   ),
