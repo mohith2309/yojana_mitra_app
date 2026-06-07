@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-PROJECT_DIR="/Users/mohith/Downloads/yojana_mitra_app"
+PROJECT_DIR="/app"
 cd "$PROJECT_DIR"
 
 echo "════════════════════════════════════════════════════════"

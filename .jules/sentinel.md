@@ -1,0 +1,4 @@
+## 2025-02-19 - Hardcoded API Key Removed
+**Vulnerability:** Found a hardcoded `DATA_GOV_KEY` secret API key in `citizen_api.py` and `render.yaml`.
+**Learning:** Hardcoding credentials in version-controlled source code and deployment manifests makes them easily discoverable by malicious actors or even accidentally leaked. Using environment variables correctly separates secrets from the codebase. In this repo's Render deployments, `sync: false` ensures manual configuration instead of hardcoded strings.
+**Prevention:** Always use environment variable fetching (`os.getenv`) and do not provide the actual secret as a default fallback. Use secrets management solutions or configuration features like Render's `sync: false` to ensure keys are populated safely at runtime or deployment.
