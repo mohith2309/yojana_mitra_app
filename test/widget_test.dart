@@ -19,6 +19,7 @@ void main() {
     });
 
     await tester.pumpWidget(const BharatMitraApp());
+    await tester.pumpAndSettle();
 
     expect(find.text('BharatMitra'), findsOneWidget);
     expect(find.text('Find schemes'), findsOneWidget);
@@ -47,6 +48,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Best schemes for you'), findsOneWidget);
-    expect(find.text('Widow Pension Support'), findsOneWidget);
+
+    // Check for some scheme that actually matches the profile of 'Farmer' and 'Maharashtra'.
+    expect(find.text('PM-KISAN'), findsOneWidget);
   });
 }
