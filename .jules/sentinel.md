@@ -1,0 +1,4 @@
+## 2025-02-28 - Secure API Error Handling
+**Vulnerability:** External API error responses (`response.text`) were being directly raised inside HTTPExceptions (`raise HTTPException(..., detail=response.text)`). This could expose sensitive context about the internal state, parameters, limits, or configurations to the client, especially when fetching data from systems like Data.gov or external GenAI endpoints.
+**Learning:** Returning unredacted `response.text` from third-party calls violates the "Fail securely" and "Trust nothing" concepts. Information leakage can aid malicious actors in probing inner dependencies and bypassing specific restrictions.
+**Prevention:** Mask raw upstream error strings with generic user-friendly messages like "Upstream API error". Log the specific errors internally for debugging rather than emitting them openly on the network interface.
