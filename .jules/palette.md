@@ -1,0 +1,3 @@
+## 2024-05-24 - Accessibility for icon-only buttons in Flutter
+**Learning:** In Flutter, `IconButton`s that do not include visible text labels must have a `tooltip` property defined. This is a critical accessibility requirement because the `tooltip` is used by screen readers (like TalkBack on Android or VoiceOver on iOS) to announce the button's purpose to visually impaired users, as well as providing a visual hint on long press/hover.
+**Action:** Always ensure any newly added `IconButton` (or similar icon-only interactive widget) has a clear, descriptive `tooltip` property explicitly set in Flutter codebases.
