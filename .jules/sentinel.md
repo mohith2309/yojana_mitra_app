@@ -1,0 +1,4 @@
+## 2025-02-24 - Do not leak upstream API error structures
+**Vulnerability:** External API integration endpoints directly passed raw upstream error responses (`response.text`) to clients via `HTTPException(detail=response.text)`.
+**Learning:** This exposes sensitive internal application configurations, upstream infrastructure details, and provider schemas to external actors, violating the principle of failing securely.
+**Prevention:** Upstream error structures should be logged server-side using standard Python logging. Endpoints must return generic, sanitized `HTTPException` details to external users, providing sufficient feedback while preventing leakage of internal application state.
