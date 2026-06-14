@@ -1,0 +1,3 @@
+## 2024-06-14 - [Concurrent API Execution]
+**Learning:** The FastAPI backend relies heavily on fetching data from multiple external sources (e.g., feed URLs and data.gov.in) to serve endpoints like `/mandi/advice`, `/aqi/plan`, `/flood/risk`, `/career/guide`, and `/civic/report-draft`. A significant performance bottleneck was identified where these calls were executed sequentially, leading to cumulative I/O wait times.
+**Action:** When making multiple independent asynchronous requests, always group them using `asyncio.gather()` to execute them concurrently. This reduces the total execution time from O(N) to roughly the duration of the single slowest request, dramatically improving response times.
