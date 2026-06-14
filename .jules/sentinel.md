@@ -1,0 +1,4 @@
+## 2025-06-14 - Information Leakage via Error Messages
+**Vulnerability:** The FastAPI backend directly returned the raw response text from upstream API calls inside `HTTPException` detail fields (e.g., `raise HTTPException(status_code=response.status_code, detail=response.text)`). This could expose sensitive internal service architecture, tokens, or other restricted upstream data to the client if the upstream service returned verbose errors.
+**Learning:** Raw upstream errors should never be passed transparently to the client. This breaks the principle of failing securely and creates an information disclosure vulnerability.
+**Prevention:** Catch upstream errors, log the verbose details server-side using a logger (e.g., `logger.error`), and return a generic, sanitized error message to the client (e.g., "An error occurred while communicating with the upstream service.").
