@@ -1,0 +1,3 @@
+## 2026-05-20 - Icon-Only Button Accessibility in Flutter
+**Learning:** Found multiple instances of `IconButton` without a `tooltip` property. In Flutter, the `tooltip` property on an `IconButton` serves a dual purpose: it provides a visual tooltip for mouse users on desktop/web, and crucially, it acts as the semantic label for screen readers on mobile devices (TalkBack/VoiceOver). Without it, screen readers will just read "Button" and provide no context to visually impaired users.
+**Action:** When creating icon-only buttons (like `IconButton`) in Flutter, always ensure the `tooltip` property is defined with a concise, actionable description of the button's purpose (e.g., 'Close', 'Save scheme', 'Clear search').
