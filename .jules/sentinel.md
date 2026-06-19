@@ -1,0 +1,4 @@
+## 2025-06-19 - [Prevent Leakage of Upstream API Details in Error Responses]
+**Vulnerability:** Directly passing upstream API error responses (`response.text`) via FastAPI's `HTTPException(detail=...)` back to the frontend client.
+**Learning:** This exposes internal service architecture, exact upstream error messages, and potentially stack traces to the public. The gateway component should shield clients from such details.
+**Prevention:** Catch upstream API errors using status codes (e.g., `>= 400`), log the verbose error response (`response.text`) securely server-side using the `logging` module, and return a sanitized, generic error message (like "Upstream service error") with an appropriate 502 Bad Gateway status to the client.
