@@ -1,0 +1,4 @@
+## 2025-02-21 - [FastAPI Upstream Error Leakage]
+**Vulnerability:** The FastAPI backend directly propagated upstream `response.text` into HTTP exceptions when upstream API requests (like NVIDIA or Data.gov) failed. This caused the backend to potentially leak sensitive internal infrastructure details, stack traces, or other internal error data from those upstream APIs directly to the user.
+**Learning:** Returning unhandled or un-sanitized external system error payloads via `HTTPException(..., detail=response.text)` represents an information disclosure risk. Even if our own app behaves perfectly, we cannot guarantee what an upstream API will return in error states.
+**Prevention:** Always log specific, detailed errors on the backend using the logging framework, and return generic, sanitized errors (e.g., "Upstream service error") to the end user.
