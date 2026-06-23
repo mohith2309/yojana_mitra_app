@@ -1,0 +1,4 @@
+## 2025-02-26 - Preventing Upstream Error Leakage in FastAPI
+**Vulnerability:** The FastAPI backend directly passed upstream API error responses (`response.text`) to the `detail` parameter of `HTTPException`, leaking sensitive internal service architecture, external dependency status, and unhandled exception details to the client.
+**Learning:** Returning raw upstream errors (`response.text`) from endpoints (like Data.gov or NVIDIA) directly exposes potential vulnerability vectors in upstream providers to the public API surface.
+**Prevention:** Instead of passing the raw text to clients, return a generic sanitized error message (e.g., `"An error occurred with the upstream service."`) and log the raw upstream error internally using `logger.error(f"Provider error: {response.text}")`. This isolates the client from the underlying architecture.
