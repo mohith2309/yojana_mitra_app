@@ -1,0 +1,4 @@
+## 2025-02-14 - Prevent Information Leakage in Upstream Error Handling
+**Vulnerability:** The application was catching upstream HTTP errors from external APIs (like NVIDIA or Data.gov) and directly embedding their raw error payloads (`response.text`) into FastAPI `HTTPException` detail responses returned to the client.
+**Learning:** This is a classic Information Leakage pattern in proxy/gateway architectures. Exposing raw backend responses to the client can inadvertently leak internal architecture details, upstream API keys embedded in responses, stack traces, or other unscrubbed sensitive data from the upstream service.
+**Prevention:** Always log verbose or raw errors internally (e.g., using `logging.error`) for debugging and observability, but ensure exceptions returning to the public client only contain generic, sanitized messages (like "Upstream service error").
