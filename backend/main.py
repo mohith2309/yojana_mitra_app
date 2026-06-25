@@ -121,7 +121,17 @@ def records_from_payload(payload: Any) -> list[dict[str, Any]]:
         return [item for item in payload if isinstance(item, dict)]
     if not isinstance(payload, dict):
         return []
-    for key in ("records", "data", "items", "results", "rows", "alerts", "schemes", "courses", "contacts"):
+    for key in (
+        "records",
+        "data",
+        "items",
+        "results",
+        "rows",
+        "alerts",
+        "schemes",
+        "courses",
+        "contacts",
+    ):
         value = payload.get(key)
         if isinstance(value, list):
             return [item for item in value if isinstance(item, dict)]
@@ -147,7 +157,9 @@ def first_number(record: dict[str, Any], keys: list[str]) -> float | None:
         return None
 
 
-def source_status(source: str, *, configured: bool, ok: bool = False, reason: str = "") -> dict[str, Any]:
+def source_status(
+    source: str, *, configured: bool, ok: bool = False, reason: str = ""
+) -> dict[str, Any]:
     return {
         "source": source,
         "configured": configured,
@@ -228,38 +240,64 @@ async def fetch_json_url(url: str, params: dict[str, Any] | None = None) -> Any:
     return await asyncio.to_thread(fetch_json_url_sync, url, params)
 
 
-async def fetch_feed_records(feed_url: str, params: dict[str, Any], source: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def fetch_feed_records(
+    feed_url: str, params: dict[str, Any], source: str
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if not feed_url:
         return [], source_status(source, configured=False, reason="feed URL missing")
     try:
         payload = await fetch_json_url(feed_url, params)
         records = records_from_payload(payload)
-        return records, source_status(source, configured=True, ok=bool(records), reason="" if records else "no matching records")
+        return records, source_status(
+            source,
+            configured=True,
+            ok=bool(records),
+            reason="" if records else "no matching records",
+        )
     except (OSError, ValueError):
-        return [], source_status(source, configured=True, reason="public feed unavailable")
+        return [], source_status(
+            source, configured=True, reason="public feed unavailable"
+        )
 
 
-async def fetch_data_gov_records(resource_id: str, params: dict[str, Any], source: str, limit: int = 20) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+async def fetch_data_gov_records(
+    resource_id: str, params: dict[str, Any], source: str, limit: int = 20
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if not resource_id:
         return [], source_status(source, configured=False, reason="resource ID missing")
     api_key = env("DATA_GOV_API_KEY")
     if not api_key:
-        return [], source_status(source, configured=True, reason="DATA_GOV_API_KEY missing")
+        return [], source_status(
+            source, configured=True, reason="DATA_GOV_API_KEY missing"
+        )
     base_url = env("DATA_GOV_BASE_URL", "https://api.data.gov.in")
     query = {"api-key": api_key, "format": "json", "limit": str(limit), **params}
     try:
-        payload = await fetch_json_url(f"{base_url.rstrip('/')}/resource/{resource_id}", query)
+        payload = await fetch_json_url(
+            f"{base_url.rstrip('/')}/resource/{resource_id}", query
+        )
         records = records_from_payload(payload)
-        return records, source_status(source, configured=True, ok=bool(records), reason="" if records else "no matching records")
+        return records, source_status(
+            source,
+            configured=True,
+            ok=bool(records),
+            reason="" if records else "no matching records",
+        )
     except (OSError, ValueError):
-        return [], source_status(source, configured=True, reason="data.gov.in unavailable")
+        return [], source_status(
+            source, configured=True, reason="data.gov.in unavailable"
+        )
 
 
 def configured_demo_modules() -> dict[str, bool]:
     return {
         "mandi": bool(env("MANDI_FEED_URL") or env("MANDI_DATA_GOV_RESOURCE_ID")),
         "aqi": bool(env("AQI_FEED_URL") or env("AQI_DATA_GOV_RESOURCE_ID")),
-        "flood": bool(env("FLOOD_ALERT_FEED_URL") or env("FLOOD_DATA_GOV_RESOURCE_ID") or env("SOIL_MOISTURE_DATA_GOV_RESOURCE_ID")),
+        "flood": bool(
+            env("FLOOD_ALERT_FEED_URL")
+            or env("FLOOD_DATA_GOV_RESOURCE_ID")
+            or env("SOIL_MOISTURE_DATA_GOV_RESOURCE_ID")
+        ),
         "career": bool(
             env("SCHOLARSHIP_FEED_URL")
             or env("SCHOLARSHIP_DATA_GOV_RESOURCE_ID")
@@ -283,7 +321,10 @@ def model_for_mode(mode: str, explicit_model: str | None = None) -> str:
     if normalized in {"consumer", "fast", "chat"}:
         return env("NVIDIA_CONSUMER_MODEL", "google/gemma-3n-e4b-it")
     if normalized in {"auto", "agent", "smart", "reasoning"}:
-        return env("NVIDIA_AUTOTASK_MODEL", env("NVIDIA_REASONING_MODEL", "mistralai/mistral-medium-3.5-128b"))
+        return env(
+            "NVIDIA_AUTOTASK_MODEL",
+            env("NVIDIA_REASONING_MODEL", "mistralai/mistral-medium-3.5-128b"),
+        )
     if normalized == "safety":
         return env("NVIDIA_SAFETY_MODEL", "meta/llama-guard-4-12b")
     if normalized in {"small", "cheap"}:
@@ -313,7 +354,9 @@ def env_int(name: str, default: int) -> int:
 
 def local_extract_profile(text: str) -> dict[str, Any]:
     lower = text.lower()
-    income_match = list(re.finditer(r"(?:income|annual|rs\.?|around|about)?\s*(\d{4,7})", lower))
+    income_match = list(
+        re.finditer(r"(?:income|annual|rs\.?|around|about)?\s*(\d{4,7})", lower)
+    )
     income = int(income_match[-1].group(1)) if income_match else None
 
     def has_any(words: list[str]) -> bool:
@@ -343,12 +386,20 @@ def local_extract_profile(text: str) -> dict[str, Any]:
             None,
         ),
         "rural": has_any(["village", "rural", "gaon", "gram"]),
-        "low_income": income <= 120000 if income else has_any(["low income", "poor", "garib", "bpl"]),
+        "low_income": (
+            income <= 120000
+            if income
+            else has_any(["low income", "poor", "garib", "bpl"])
+        ),
         "annual_income": income,
         "farmer": has_any(["farmer", "kisan", "crop", "land", "acre", "agriculture"]),
-        "widow": has_any(["widow", "husband passed", "pati nahi", "pati died", "single mother"]),
+        "widow": has_any(
+            ["widow", "husband passed", "pati nahi", "pati died", "single mother"]
+        ),
         "student": has_any(["student", "school", "college", "scholarship", "hostel"]),
-        "woman_or_girl": has_any(["woman", "female", "girl", "daughter", "mother", "widow", "mahila"]),
+        "woman_or_girl": has_any(
+            ["woman", "female", "girl", "daughter", "mother", "widow", "mahila"]
+        ),
         "disability": has_any(["disabled", "disability", "divyang", "handicap"]),
         "housing_need": has_any(["kutcha", "house", "housing", "pucca", "home"]),
         "lpg_need": has_any(["lpg", "cylinder", "gas", "chulha", "smoke"]),
@@ -374,16 +425,32 @@ async def nvidia_chat(
     base_url = env("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
     chosen_model = model_for_mode(mode, model)
     url = f"{base_url.rstrip('/')}/chat/completions"
-    enable_thinking = enable_thinking if enable_thinking is not None else env("NVIDIA_ENABLE_THINKING", "true").lower() == "true"
-    clear_thinking = clear_thinking if clear_thinking is not None else env("NVIDIA_CLEAR_THINKING", "false").lower() == "true"
+    enable_thinking = (
+        enable_thinking
+        if enable_thinking is not None
+        else env("NVIDIA_ENABLE_THINKING", "true").lower() == "true"
+    )
+    clear_thinking = (
+        clear_thinking
+        if clear_thinking is not None
+        else env("NVIDIA_CLEAR_THINKING", "false").lower() == "true"
+    )
     normalized_mode = mode.lower().strip()
     default_temperature = (
         env_float("NVIDIA_CONSUMER_TEMPERATURE", 0.2)
         if normalized_mode == "consumer"
         else env_float("NVIDIA_TEMPERATURE", 0.7)
     )
-    default_top_p = env_float("NVIDIA_CONSUMER_TOP_P", 0.7) if normalized_mode == "consumer" else env_float("NVIDIA_TOP_P", 1.0)
-    default_max_tokens = env_int("NVIDIA_CONSUMER_MAX_TOKENS", 512) if normalized_mode == "consumer" else env_int("NVIDIA_MAX_TOKENS", 16384)
+    default_top_p = (
+        env_float("NVIDIA_CONSUMER_TOP_P", 0.7)
+        if normalized_mode == "consumer"
+        else env_float("NVIDIA_TOP_P", 1.0)
+    )
+    default_max_tokens = (
+        env_int("NVIDIA_CONSUMER_MAX_TOKENS", 512)
+        if normalized_mode == "consumer"
+        else env_int("NVIDIA_MAX_TOKENS", 16384)
+    )
     if normalized_mode == "safety":
         default_temperature = env_float("NVIDIA_SAFETY_TEMPERATURE", 1.0)
         default_top_p = env_float("NVIDIA_SAFETY_TOP_P", 0.7)
@@ -396,11 +463,16 @@ async def nvidia_chat(
         default_temperature = env_float("NVIDIA_MULTIMODAL_TEMPERATURE", 0.1)
         default_top_p = env_float("NVIDIA_MULTIMODAL_TOP_P", 0.7)
         default_max_tokens = env_int("NVIDIA_MULTIMODAL_MAX_TOKENS", 512)
-    default_reasoning_effort = reasoning_effort or env("NVIDIA_REASONING_EFFORT", "high")
+    default_reasoning_effort = reasoning_effort or env(
+        "NVIDIA_REASONING_EFFORT", "high"
+    )
     payload = {
         "model": chosen_model,
         "messages": [
-            {"role": "system", "content": "You are BharatMitra, a cautious Indian citizen-service assistant. Return concise, verifiable answers."},
+            {
+                "role": "system",
+                "content": "You are BharatMitra, a cautious Indian citizen-service assistant. Return concise, verifiable answers.",
+            },
             {"role": "user", "content": prompt},
         ],
         "temperature": temperature if temperature is not None else default_temperature,
@@ -464,7 +536,9 @@ async def nvidia_pii_detect(request: PiiDetectRequest) -> dict[str, Any]:
     }
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     async with httpx.AsyncClient(timeout=60) as client:
-        response = await client.post(f"{base_url.rstrip('/')}/chat/completions", headers=headers, json=payload)
+        response = await client.post(
+            f"{base_url.rstrip('/')}/chat/completions", headers=headers, json=payload
+        )
     if response.status_code >= 400:
         raise HTTPException(status_code=response.status_code, detail=response.text)
     content = response.json()["choices"][0]["message"].get("content") or "{}"
@@ -479,7 +553,11 @@ async def nvidia_rerank(request: RerankRequest) -> dict[str, Any]:
     api_key = env("NVIDIA_API_KEY")
     if not api_key:
         rankings = [
-            {"index": index, "score": overlap_score(request.query, passage), "text": passage}
+            {
+                "index": index,
+                "score": overlap_score(request.query, passage),
+                "text": passage,
+            }
             for index, passage in enumerate(request.passages)
         ]
         rankings.sort(key=lambda item: item["score"], reverse=True)
@@ -489,9 +567,12 @@ async def nvidia_rerank(request: RerankRequest) -> dict[str, Any]:
             "rankings": rankings,
         }
 
-    url = env("NVIDIA_RERANK_URL", "https://ai.api.nvidia.com/v1/retrieval/nvidia/reranking")
+    url = env(
+        "NVIDIA_RERANK_URL", "https://ai.api.nvidia.com/v1/retrieval/nvidia/reranking"
+    )
     payload = {
-        "model": request.model or env("NVIDIA_RERANK_MODEL", "nv-rerank-qa-mistral-4b:1"),
+        "model": request.model
+        or env("NVIDIA_RERANK_MODEL", "nv-rerank-qa-mistral-4b:1"),
         "query": {"text": request.query},
         "passages": [{"text": passage} for passage in request.passages],
     }
@@ -512,7 +593,9 @@ def health() -> dict[str, Any]:
         "configured": {
             "nvidia": bool(env("NVIDIA_API_KEY")),
             "bhashini": bool(env("BHASHINI_API_KEY")),
-            "api_setu": bool(env("API_SETU_CLIENT_ID") and env("API_SETU_CLIENT_SECRET")),
+            "api_setu": bool(
+                env("API_SETU_CLIENT_ID") and env("API_SETU_CLIENT_SECRET")
+            ),
             "data_gov": bool(env("DATA_GOV_API_KEY")),
             "live_modules": configured_demo_modules(),
             "demo_modules": True,
@@ -529,7 +612,11 @@ async def extract_profile(request: ProfileRequest) -> dict[str, Any]:
             "disability, housing_need, lpg_need. Text: "
             f"{request.text}"
         )
-        return {"engine": "nvidia", "mode": request.mode, "result": await nvidia_chat(prompt, mode=request.mode)}
+        return {
+            "engine": "nvidia",
+            "mode": request.mode,
+            "result": await nvidia_chat(prompt, mode=request.mode),
+        }
     return {"engine": "local_rules", "profile": local_extract_profile(request.text)}
 
 
@@ -577,14 +664,26 @@ def normalize_mandi_prices(records: list[dict[str, Any]]) -> list[dict[str, Any]
     for record in records[:10]:
         prices.append(
             {
-                "crop": first_value(record, ["commodity", "crop", "Commodity"], "unknown crop"),
-                "market": first_value(record, ["market", "mandi", "Market"], "unknown mandi"),
+                "crop": first_value(
+                    record, ["commodity", "crop", "Commodity"], "unknown crop"
+                ),
+                "market": first_value(
+                    record, ["market", "mandi", "Market"], "unknown mandi"
+                ),
                 "district": first_value(record, ["district", "District"], ""),
                 "state": first_value(record, ["state", "State"], ""),
-                "min_price_rs_per_quintal": first_number(record, ["min_price", "Min_Price", "minPrice"]),
-                "max_price_rs_per_quintal": first_number(record, ["max_price", "Max_Price", "maxPrice"]),
-                "modal_price_rs_per_quintal": first_number(record, ["modal_price", "Modal_Price", "price", "modalPrice"]),
-                "date": first_value(record, ["arrival_date", "Arrival_Date", "date", "updated_at"], ""),
+                "min_price_rs_per_quintal": first_number(
+                    record, ["min_price", "Min_Price", "minPrice"]
+                ),
+                "max_price_rs_per_quintal": first_number(
+                    record, ["max_price", "Max_Price", "maxPrice"]
+                ),
+                "modal_price_rs_per_quintal": first_number(
+                    record, ["modal_price", "Modal_Price", "price", "modalPrice"]
+                ),
+                "date": first_value(
+                    record, ["arrival_date", "Arrival_Date", "date", "updated_at"], ""
+                ),
             }
         )
     return prices
@@ -625,12 +724,20 @@ async def mandi_advice(request: MandiAdviceRequest) -> dict[str, Any]:
         "filters[district]": request.district,
         "filters[state.keyword]": request.state,
     }
-    feed_records, feed_status = await fetch_feed_records(env("MANDI_FEED_URL"), params, "mandi_feed")
-    data_records, data_status = await fetch_data_gov_records(env("MANDI_DATA_GOV_RESOURCE_ID"), params, "mandi_data_gov")
+    feed_records, feed_status = await fetch_feed_records(
+        env("MANDI_FEED_URL"), params, "mandi_feed"
+    )
+    data_records, data_status = await fetch_data_gov_records(
+        env("MANDI_DATA_GOV_RESOURCE_ID"), params, "mandi_data_gov"
+    )
     live_prices = normalize_mandi_prices(feed_records or data_records)
     display_prices = live_prices or mock_mandi_prices(crop, district, state)
     best_price = max(
-        [price for price in display_prices if price["modal_price_rs_per_quintal"] is not None],
+        [
+            price
+            for price in display_prices
+            if price["modal_price_rs_per_quintal"] is not None
+        ],
         key=lambda price: price["modal_price_rs_per_quintal"],
         default=None,
     )
@@ -657,7 +764,11 @@ async def mandi_advice(request: MandiAdviceRequest) -> dict[str, Any]:
             quantity_note,
         ],
         "source_status": [feed_status, data_status],
-        "fallback_message": "" if live_prices else "Live mandi source is not configured or unavailable, so local advice is shown.",
+        "fallback_message": (
+            ""
+            if live_prices
+            else "Live mandi source is not configured or unavailable, so local advice is shown."
+        ),
     }
 
 
@@ -669,21 +780,40 @@ def band_for_aqi(aqi: int | None) -> tuple[str, str]:
     if aqi <= 100:
         return "acceptable", "Prefer lower-traffic routes for long outdoor activity."
     if aqi <= 200:
-        return "moderate_to_poor", "Keep heavy outdoor work short and prefer cleaner hours."
-    return "very_poor", "Avoid unnecessary heavy outdoor activity and follow official local advisories."
+        return (
+            "moderate_to_poor",
+            "Keep heavy outdoor work short and prefer cleaner hours.",
+        )
+    return (
+        "very_poor",
+        "Avoid unnecessary heavy outdoor activity and follow official local advisories.",
+    )
 
 
 def normalize_aqi(records: list[dict[str, Any]]) -> dict[str, Any] | None:
     for record in records[:10]:
-        value = first_number(record, ["aqi", "AQI", "value", "air_quality_index", "pollutant_avg", "avg_value"])
+        value = first_number(
+            record,
+            ["aqi", "AQI", "value", "air_quality_index", "pollutant_avg", "avg_value"],
+        )
         if value is None:
             continue
         return {
             "aqi": int(value),
-            "station": first_value(record, ["station", "station_name", "monitoring_station"], ""),
-            "location": first_value(record, ["city", "location", "area", "district"], ""),
-            "pollutant": first_value(record, ["dominant_pollutant", "pollutant", "parameter", "pollutant_id"], ""),
-            "updated_at": first_value(record, ["last_update", "updated_at", "date"], ""),
+            "station": first_value(
+                record, ["station", "station_name", "monitoring_station"], ""
+            ),
+            "location": first_value(
+                record, ["city", "location", "area", "district"], ""
+            ),
+            "pollutant": first_value(
+                record,
+                ["dominant_pollutant", "pollutant", "parameter", "pollutant_id"],
+                "",
+            ),
+            "updated_at": first_value(
+                record, ["last_update", "updated_at", "date"], ""
+            ),
         }
     return None
 
@@ -700,8 +830,12 @@ async def aqi_plan(request: AqiPlanRequest) -> dict[str, Any]:
         "filters[state]": normalized_state,
         "filters[city]": request.location,
     }
-    feed_records, feed_status = await fetch_feed_records(env("AQI_FEED_URL"), params, "aqi_feed")
-    data_records, data_status = await fetch_data_gov_records(env("AQI_DATA_GOV_RESOURCE_ID"), params, "aqi_data_gov")
+    feed_records, feed_status = await fetch_feed_records(
+        env("AQI_FEED_URL"), params, "aqi_feed"
+    )
+    data_records, data_status = await fetch_data_gov_records(
+        env("AQI_DATA_GOV_RESOURCE_ID"), params, "aqi_data_gov"
+    )
     live_reading = normalize_aqi(feed_records or data_records)
     mock_reading = {
         "aqi": request.aqi or 135,
@@ -719,34 +853,53 @@ async def aqi_plan(request: AqiPlanRequest) -> dict[str, Any]:
         "reading": live_reading or mock_reading,
         "band": band,
         "guidance": guidance,
-        "activity_plan": [f"{activity}: plan with current band '{band}' in mind." for activity in activities],
+        "activity_plan": [
+            f"{activity}: plan with current band '{band}' in mind."
+            for activity in activities
+        ],
         "source_status": [feed_status, data_status],
-        "fallback_message": "" if live_reading else "Live AQI source is not configured or unavailable, so local AQI input is used.",
+        "fallback_message": (
+            ""
+            if live_reading
+            else "Live AQI source is not configured or unavailable, so local AQI input is used."
+        ),
     }
 
 
 def normalize_alerts(records: list[dict[str, Any]]) -> list[dict[str, str]]:
     alerts = []
     for record in records[:10]:
-        headline = first_value(record, ["headline", "title", "alert", "warning", "description"], "Official alert")
+        headline = first_value(
+            record,
+            ["headline", "title", "alert", "warning", "description"],
+            "Official alert",
+        )
         alerts.append(
             {
                 "headline": headline,
-                "severity": first_value(record, ["severity", "level", "color", "alert_level"], "watch"),
+                "severity": first_value(
+                    record, ["severity", "level", "color", "alert_level"], "watch"
+                ),
                 "district": first_value(record, ["district", "area", "location"], ""),
                 "state": first_value(record, ["state"], ""),
                 "source": first_value(record, ["source", "agency"], "official feed"),
-                "updated_at": first_value(record, ["updated_at", "date", "issued_at"], ""),
+                "updated_at": first_value(
+                    record, ["updated_at", "date", "issued_at"], ""
+                ),
             }
         )
     return alerts
 
 
-def normalize_rainfall(records: list[dict[str, Any]], district: str = "") -> list[dict[str, Any]]:
+def normalize_rainfall(
+    records: list[dict[str, Any]], district: str = ""
+) -> list[dict[str, Any]]:
     district_lower = district.lower().strip()
     rainfall = []
     for record in records:
-        record_district = first_value(record, ["District", "district", "area", "location"], "")
+        record_district = first_value(
+            record, ["District", "district", "area", "location"], ""
+        )
         if district_lower and record_district.lower() != district_lower:
             continue
         rainfall.append(
@@ -756,7 +909,9 @@ def normalize_rainfall(records: list[dict[str, Any]], district: str = "") -> lis
                 "date": first_value(record, ["Date", "date", "updated_at"], ""),
                 "year": first_value(record, ["Year", "year"], ""),
                 "month": first_value(record, ["Month", "month"], ""),
-                "avg_rainfall_mm": first_number(record, ["Avg_rainfall", "avg_rainfall", "rainfall", "rainfall_mm"]),
+                "avg_rainfall_mm": first_number(
+                    record, ["Avg_rainfall", "avg_rainfall", "rainfall", "rainfall_mm"]
+                ),
                 "agency": first_value(record, ["Agency_name", "agency", "source"], ""),
             }
         )
@@ -765,11 +920,15 @@ def normalize_rainfall(records: list[dict[str, Any]], district: str = "") -> lis
     return rainfall
 
 
-def normalize_soil_moisture(records: list[dict[str, Any]], district: str = "") -> list[dict[str, Any]]:
+def normalize_soil_moisture(
+    records: list[dict[str, Any]], district: str = ""
+) -> list[dict[str, Any]]:
     district_lower = district.lower().strip()
     soil = []
     for record in records:
-        record_district = first_value(record, ["District", "district", "area", "location"], "")
+        record_district = first_value(
+            record, ["District", "district", "area", "location"], ""
+        )
         if district_lower and record_district.lower() != district_lower:
             continue
         soil.append(
@@ -781,7 +940,12 @@ def normalize_soil_moisture(records: list[dict[str, Any]], district: str = "") -
                 "month": first_value(record, ["Month", "month"], ""),
                 "avg_soil_moisture_15cm": first_number(
                     record,
-                    ["Avg_smlvl_at15cm", "avg_smlvl_at15cm", "soil_moisture", "avg_soil_moisture"],
+                    [
+                        "Avg_smlvl_at15cm",
+                        "avg_smlvl_at15cm",
+                        "soil_moisture",
+                        "avg_soil_moisture",
+                    ],
                 ),
                 "agency": first_value(record, ["Agency_name", "agency", "source"], ""),
             }
@@ -803,8 +967,12 @@ async def flood_risk(request: FloodRiskRequest) -> dict[str, Any]:
         "filters[State]": request.state,
         "filters[Year]": env("FLOOD_RAINFALL_YEAR", "2025"),
     }
-    feed_records, feed_status = await fetch_feed_records(env("FLOOD_ALERT_FEED_URL"), params, "flood_feed")
-    data_records, data_status = await fetch_data_gov_records(env("FLOOD_DATA_GOV_RESOURCE_ID"), params, "flood_data_gov")
+    feed_records, feed_status = await fetch_feed_records(
+        env("FLOOD_ALERT_FEED_URL"), params, "flood_feed"
+    )
+    data_records, data_status = await fetch_data_gov_records(
+        env("FLOOD_DATA_GOV_RESOURCE_ID"), params, "flood_data_gov"
+    )
     soil_params = {
         "filters[State]": request.state,
         "filters[District]": request.district,
@@ -861,8 +1029,17 @@ async def flood_risk(request: FloodRiskRequest) -> dict[str, Any]:
                 "updated_at": "local demo",
             }
         ]
-    alert_text = " ".join([alert, *[item["headline"].lower() for item in alerts], *[item["severity"].lower() for item in alerts]])
-    text_high = any(word in alert_text for word in ["red", "high", "flood", "cyclone", "heavy", "severe"])
+    alert_text = " ".join(
+        [
+            alert,
+            *[item["headline"].lower() for item in alerts],
+            *[item["severity"].lower() for item in alerts],
+        ]
+    )
+    text_high = any(
+        word in alert_text
+        for word in ["red", "high", "flood", "cyclone", "heavy", "severe"]
+    )
     risk = "high" if level_high or text_high else "watch"
     return {
         "mode": "live" if has_live_flood_data else "local_fallback",
@@ -879,20 +1056,36 @@ async def flood_risk(request: FloodRiskRequest) -> dict[str, Any]:
             "Avoid crossing flooded roads, bridges, and fast-moving water.",
         ],
         "source_status": [feed_status, data_status, soil_status],
-        "fallback_message": "" if has_live_flood_data else "Live disaster source is not configured or unavailable, so local safety checklist is shown.",
+        "fallback_message": (
+            ""
+            if has_live_flood_data
+            else "Live disaster source is not configured or unavailable, so local safety checklist is shown."
+        ),
     }
 
 
-def normalize_opportunities(records: list[dict[str, Any]], kind: str) -> list[dict[str, str]]:
+def normalize_opportunities(
+    records: list[dict[str, Any]], kind: str
+) -> list[dict[str, str]]:
     items = []
     for record in records[:8]:
         items.append(
             {
                 "type": kind,
-                "name": first_value(record, ["name", "title", "scheme_name", "course_name"], f"{kind.title()} option"),
-                "provider": first_value(record, ["provider", "department", "agency", "ministry"], ""),
-                "eligibility": first_value(record, ["eligibility", "education", "class", "qualification"], ""),
-                "deadline": first_value(record, ["deadline", "last_date", "closing_date"], ""),
+                "name": first_value(
+                    record,
+                    ["name", "title", "scheme_name", "course_name"],
+                    f"{kind.title()} option",
+                ),
+                "provider": first_value(
+                    record, ["provider", "department", "agency", "ministry"], ""
+                ),
+                "eligibility": first_value(
+                    record, ["eligibility", "education", "class", "qualification"], ""
+                ),
+                "deadline": first_value(
+                    record, ["deadline", "last_date", "closing_date"], ""
+                ),
                 "url": first_value(record, ["url", "link", "portal"], ""),
             }
         )
@@ -904,13 +1097,23 @@ async def career_guide(request: CareerGuideRequest) -> dict[str, Any]:
     education = clean(request.class_or_education, "current class or education")
     district = clean(request.district, "your district")
     interests = request.interests or ["skills", "jobs", "scholarships"]
-    params = {"education": request.class_or_education, "district": request.district, "interests": ",".join(interests)}
-    scholarship_feed, scholarship_feed_status = await fetch_feed_records(env("SCHOLARSHIP_FEED_URL"), params, "scholarship_feed")
+    params = {
+        "education": request.class_or_education,
+        "district": request.district,
+        "interests": ",".join(interests),
+    }
+    scholarship_feed, scholarship_feed_status = await fetch_feed_records(
+        env("SCHOLARSHIP_FEED_URL"), params, "scholarship_feed"
+    )
     scholarship_data, scholarship_data_status = await fetch_data_gov_records(
         env("SCHOLARSHIP_DATA_GOV_RESOURCE_ID"), params, "scholarship_data_gov"
     )
-    skill_feed, skill_feed_status = await fetch_feed_records(env("SKILL_FEED_URL"), params, "skill_feed")
-    skill_data, skill_data_status = await fetch_data_gov_records(env("SKILL_DATA_GOV_RESOURCE_ID"), params, "skill_data_gov")
+    skill_feed, skill_feed_status = await fetch_feed_records(
+        env("SKILL_FEED_URL"), params, "skill_feed"
+    )
+    skill_data, skill_data_status = await fetch_data_gov_records(
+        env("SKILL_DATA_GOV_RESOURCE_ID"), params, "skill_data_gov"
+    )
     opportunities = [
         *normalize_opportunities(scholarship_feed or scholarship_data, "scholarship"),
         *normalize_opportunities(skill_feed or skill_data, "skill"),
@@ -942,22 +1145,48 @@ async def career_guide(request: CareerGuideRequest) -> dict[str, Any]:
     )
     return {
         "mode": "live" if live_opportunities else "local_fallback",
-        "profile": {"education": education, "district": district, "interests": interests},
+        "profile": {
+            "education": education,
+            "district": district,
+            "interests": interests,
+        },
         "opportunities": opportunities,
         "guide": [
-            f"Review {len(opportunities)} live opportunity records." if live_opportunities else "Use local guidance until live scholarship/skill feeds are configured.",
+            (
+                f"Review {len(opportunities)} live opportunity records."
+                if live_opportunities
+                else "Use local guidance until live scholarship/skill feeds are configured."
+            ),
             scholarship_hint,
             "Shortlist nearby low-cost courses before choosing paid coaching.",
             "Check NSP, state scholarship portal, ITI, Skill India, and apprenticeship options.",
             f"Build a 30-day plan around: {', '.join(interests[:4])}.",
         ],
         "official_links": [
-            {"name": "Skill India Digital", "url": "https://www.skillindiadigital.gov.in/"},
-            {"name": "Apprenticeship India", "url": "https://www.apprenticeshipindia.gov.in/"},
-            {"name": "National Scholarship Portal", "url": "https://scholarships.gov.in/"},
+            {
+                "name": "Skill India Digital",
+                "url": "https://www.skillindiadigital.gov.in/",
+            },
+            {
+                "name": "Apprenticeship India",
+                "url": "https://www.apprenticeshipindia.gov.in/",
+            },
+            {
+                "name": "National Scholarship Portal",
+                "url": "https://scholarships.gov.in/",
+            },
         ],
-        "source_status": [scholarship_feed_status, scholarship_data_status, skill_feed_status, skill_data_status],
-        "fallback_message": "" if live_opportunities else "Live scholarship/skill sources are not configured or unavailable, so local guidance is shown.",
+        "source_status": [
+            scholarship_feed_status,
+            scholarship_data_status,
+            skill_feed_status,
+            skill_data_status,
+        ],
+        "fallback_message": (
+            ""
+            if live_opportunities
+            else "Live scholarship/skill sources are not configured or unavailable, so local guidance is shown."
+        ),
     }
 
 
@@ -966,22 +1195,42 @@ def normalize_civic_contacts(records: list[dict[str, Any]]) -> list[dict[str, st
     for record in records[:8]:
         local_body = first_value(
             record,
-            ["localBodyNameEnglish", "local_body_name", "municipality", "ulb", "city", "district"],
+            [
+                "localBodyNameEnglish",
+                "local_body_name",
+                "municipality",
+                "ulb",
+                "city",
+                "district",
+            ],
             "",
         )
-        village = first_value(record, ["villageNameEnglish", "village_name", "village"], "")
-        local_type = first_value(record, ["localBodyTypeName", "local_body_type", "type"], "")
+        village = first_value(
+            record, ["villageNameEnglish", "village_name", "village"], ""
+        )
+        local_type = first_value(
+            record, ["localBodyTypeName", "local_body_type", "type"], ""
+        )
         pincode = first_value(record, ["pincode", "pinCode", "pin_code"], "")
         contacts.append(
             {
                 "city": local_body or village,
                 "ward": first_value(record, ["ward", "zone"], ""),
-                "department": local_type or first_value(record, ["department", "office", "category"], "local body office"),
-                "phone": first_value(record, ["phone", "helpline", "contact", "mobile"], ""),
+                "department": local_type
+                or first_value(
+                    record, ["department", "office", "category"], "local body office"
+                ),
+                "phone": first_value(
+                    record, ["phone", "helpline", "contact", "mobile"], ""
+                ),
                 "portal": first_value(record, ["portal", "url", "link"], ""),
-                "state": first_value(record, ["stateNameEnglish", "state", "State"], ""),
+                "state": first_value(
+                    record, ["stateNameEnglish", "state", "State"], ""
+                ),
                 "pincode": pincode,
-                "local_body_code": first_value(record, ["localBodyCode", "local_body_code"], ""),
+                "local_body_code": first_value(
+                    record, ["localBodyCode", "local_body_code"], ""
+                ),
                 "village": village,
             }
         )
@@ -1021,25 +1270,39 @@ async def civic_report_draft(request: CivicReportRequest) -> dict[str, Any]:
         "filters[stateNameEnglish]": state,
         "filters[pincode]": pincode,
     }
-    feed_records, feed_status = await fetch_feed_records(env("CIVIC_DIRECTORY_FEED_URL"), params, "civic_directory_feed")
-    local_body_pin_records, local_body_pin_status = await fetch_data_gov_records(
-        env("CIVIC_DIRECTORY_DATA_GOV_RESOURCE_ID"), params, "civic_directory_data_gov"
+    # ⚡ Bolt: Execute independent API calls concurrently to reduce endpoint latency
+    results = await asyncio.gather(
+        fetch_feed_records(
+            env("CIVIC_DIRECTORY_FEED_URL"), params, "civic_directory_feed"
+        ),
+        fetch_data_gov_records(
+            env("CIVIC_DIRECTORY_DATA_GOV_RESOURCE_ID"),
+            params,
+            "civic_directory_data_gov",
+        ),
+        fetch_data_gov_records(
+            env("CIVIC_DIRECTORY_BACKUP_DATA_GOV_RESOURCE_ID"),
+            {"filters[stateNameEnglish]": state},
+            "civic_directory_backup_data_gov",
+        ),
+        fetch_data_gov_records(
+            env("LGD_VILLAGES_PIN_DATA_GOV_RESOURCE_ID"),
+            {"filters[stateNameEnglish]": state},
+            "lgd_villages_pin_data_gov",
+        ),
+        fetch_data_gov_records(
+            env("LGD_VILLAGES_DATA_GOV_RESOURCE_ID"),
+            {"filters[stateNameEnglish]": state},
+            "lgd_villages_data_gov",
+        ),
     )
-    local_body_records, local_body_status = await fetch_data_gov_records(
-        env("CIVIC_DIRECTORY_BACKUP_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "civic_directory_backup_data_gov",
-    )
-    village_pin_records, village_pin_status = await fetch_data_gov_records(
-        env("LGD_VILLAGES_PIN_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "lgd_villages_pin_data_gov",
-    )
-    village_records, village_status = await fetch_data_gov_records(
-        env("LGD_VILLAGES_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "lgd_villages_data_gov",
-    )
+    (
+        (feed_records, feed_status),
+        (local_body_pin_records, local_body_pin_status),
+        (local_body_records, local_body_status),
+        (village_pin_records, village_pin_status),
+        (village_records, village_status),
+    ) = results
     contacts = dedupe_civic_contacts(
         [
             *normalize_civic_contacts(feed_records),
@@ -1073,7 +1336,10 @@ async def civic_report_draft(request: CivicReportRequest) -> dict[str, Any]:
         "contacts": contacts,
         "attach": ["clear photo", "short video if safe", "landmark", "date and time"],
         "escalation": [
-            *[f"{contact['department']} {contact['phone'] or contact['portal']}".strip() for contact in contacts[:3]],
+            *[
+                f"{contact['department']} {contact['phone'] or contact['portal']}".strip()
+                for contact in contacts[:3]
+            ],
             "ward office",
             "municipal helpline",
             "state grievance portal",
@@ -1085,12 +1351,18 @@ async def civic_report_draft(request: CivicReportRequest) -> dict[str, Any]:
             village_pin_status,
             village_status,
         ],
-        "fallback_message": "" if live_contacts else "Live civic directory is not configured or unavailable, so local complaint draft is shown.",
+        "fallback_message": (
+            ""
+            if live_contacts
+            else "Live civic directory is not configured or unavailable, so local complaint draft is shown."
+        ),
     }
 
 
 @app.get("/data-gov/resource/{resource_id}")
-async def data_gov_resource(resource_id: str, limit: int = Query(10, ge=1, le=100)) -> dict[str, Any]:
+async def data_gov_resource(
+    resource_id: str, limit: int = Query(10, ge=1, le=100)
+) -> dict[str, Any]:
     api_key = env("DATA_GOV_API_KEY")
     if not api_key:
         return {
@@ -1102,12 +1374,18 @@ async def data_gov_resource(resource_id: str, limit: int = Query(10, ge=1, le=10
                     "note": "DATA_GOV_API_KEY is missing, so BharatMitra returned mock data.",
                 }
             ][:limit],
-            "source_status": [source_status("data_gov", configured=True, reason="DATA_GOV_API_KEY missing")],
+            "source_status": [
+                source_status(
+                    "data_gov", configured=True, reason="DATA_GOV_API_KEY missing"
+                )
+            ],
         }
     base_url = env("DATA_GOV_BASE_URL", "https://api.data.gov.in")
     params = {"api-key": api_key, "format": "json", "limit": str(limit)}
     async with httpx.AsyncClient(timeout=30) as client:
-        response = await client.get(f"{base_url.rstrip('/')}/resource/{resource_id}", params=params)
+        response = await client.get(
+            f"{base_url.rstrip('/')}/resource/{resource_id}", params=params
+        )
     if response.status_code >= 400:
         raise HTTPException(status_code=response.status_code, detail=response.text)
     return response.json()

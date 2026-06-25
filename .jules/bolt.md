@@ -1,0 +1,3 @@
+## 2025-06-25 - N+1 I/O Bottlenecks in Async FastAPI Endpoints
+**Learning:** Found an architectural pattern in this FastAPI backend where multiple independent external API calls (fetching data gov records and feeds) are executed sequentially using `await` instead of concurrently. For example, `civic_report_draft` makes 5 sequential `fetch_data_gov_records`/`fetch_feed_records` calls, meaning the response time is the sum of all 5 latencies.
+**Action:** When multiple independent async I/O operations are present in an endpoint, wrap them in `asyncio.gather()` to fetch them concurrently and significantly improve endpoint latency.
