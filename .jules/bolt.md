@@ -1,0 +1,3 @@
+## 2025-02-28 - Parallelize External Data Fetching with asyncio.gather
+**Learning:** In the FastAPI backend, endpoints fetching data from multiple sources (like feed URLs and data.gov.in) were resolving `await` calls sequentially, creating an N+1 I/O bottleneck. This is a common performance pitfall when aggregating data from various APIs.
+**Action:** When creating backend endpoints that aggregate data from multiple independent external sources, wrap the asynchronous fetch functions in `asyncio.gather` to execute them concurrently, reducing total latency to the duration of the slowest single request.
