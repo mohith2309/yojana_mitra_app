@@ -1,0 +1,4 @@
+## 2025-10-24 - Do not leak upstream errors directly
+**Vulnerability:** The FastAPI backend directly returned upstream service errors (e.g., from NVIDIA, data.gov) using `response.text` in `HTTPException` detail, which exposes internal architectural details and potentially sensitive upstream service configurations to the client.
+**Learning:** Upstream API errors must be logged server-side rather than forwarded directly to the client. Leaking these internals can give attackers insight into the backend infrastructure and the upstream dependencies.
+**Prevention:** Catch upstream errors, log them using `logger.error()`, and return generic error messages (e.g., `Upstream service error` with a `502 Bad Gateway` status) to the client.
