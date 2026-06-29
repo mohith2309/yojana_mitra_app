@@ -1021,24 +1021,31 @@ async def civic_report_draft(request: CivicReportRequest) -> dict[str, Any]:
         "filters[stateNameEnglish]": state,
         "filters[pincode]": pincode,
     }
-    feed_records, feed_status = await fetch_feed_records(env("CIVIC_DIRECTORY_FEED_URL"), params, "civic_directory_feed")
-    local_body_pin_records, local_body_pin_status = await fetch_data_gov_records(
-        env("CIVIC_DIRECTORY_DATA_GOV_RESOURCE_ID"), params, "civic_directory_data_gov"
-    )
-    local_body_records, local_body_status = await fetch_data_gov_records(
-        env("CIVIC_DIRECTORY_BACKUP_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "civic_directory_backup_data_gov",
-    )
-    village_pin_records, village_pin_status = await fetch_data_gov_records(
-        env("LGD_VILLAGES_PIN_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "lgd_villages_pin_data_gov",
-    )
-    village_records, village_status = await fetch_data_gov_records(
-        env("LGD_VILLAGES_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "lgd_villages_data_gov",
+    # Fetch all civic directory records concurrently to significantly reduce I/O latency
+    (
+        (feed_records, feed_status),
+        (local_body_pin_records, local_body_pin_status),
+        (local_body_records, local_body_status),
+        (village_pin_records, village_pin_status),
+        (village_records, village_status)
+    ) = await asyncio.gather(
+        fetch_feed_records(env("CIVIC_DIRECTORY_FEED_URL"), params, "civic_directory_feed"),
+        fetch_data_gov_records(env("CIVIC_DIRECTORY_DATA_GOV_RESOURCE_ID"), params, "civic_directory_data_gov"),
+        fetch_data_gov_records(
+            env("CIVIC_DIRECTORY_BACKUP_DATA_GOV_RESOURCE_ID"),
+            {"filters[stateNameEnglish]": state},
+            "civic_directory_backup_data_gov",
+        ),
+        fetch_data_gov_records(
+            env("LGD_VILLAGES_PIN_DATA_GOV_RESOURCE_ID"),
+            {"filters[stateNameEnglish]": state},
+            "lgd_villages_pin_data_gov",
+        ),
+        fetch_data_gov_records(
+            env("LGD_VILLAGES_DATA_GOV_RESOURCE_ID"),
+            {"filters[stateNameEnglish]": state},
+            "lgd_villages_data_gov",
+        ),
     )
     contacts = dedupe_civic_contacts(
         [

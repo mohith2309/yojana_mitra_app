@@ -1,0 +1,6 @@
+## 2026-06-29 - [Concurrent I/O for multiple independent APIs]
+**Learning:** [In FastAPI backends making multiple independent external API requests, doing them sequentially creates significant N+1 I/O bottlenecks. Python's asyncio.gather allows waiting for them concurrently, which drops latency to the time of the slowest single request.]
+**Action:** [When seeing consecutive  statements on independent network or database calls, immediately refactor them to use .]
+## 2025-06-29 - [Concurrent I/O for multiple independent APIs]
+**Learning:** [In FastAPI backends making multiple independent external API requests, doing them sequentially creates significant N+1 I/O bottlenecks. Python's asyncio.gather allows waiting for them concurrently, which drops latency to the time of the slowest single request.]
+**Action:** [When seeing consecutive await statements on independent network or database calls, immediately refactor them to use asyncio.gather.]
