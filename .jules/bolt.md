@@ -1,0 +1,3 @@
+## 2024-06-30 - Fix Sequential I/O Bottleneck in FastAPI Data Fetching
+**Learning:** The FastAPI backend endpoints (like `civic_report_draft`) frequently query multiple independent external API sources (using `fetch_feed_records` and `fetch_data_gov_records`). Executing these asynchronous calls sequentially via separate `await` statements created an N+1 bottleneck, causing endpoint latency to scale linearly with the number of external sources.
+**Action:** Always inspect FastAPI endpoints for independent `await` calls targeting external data sources. Group them into tuples and resolve them concurrently using `await asyncio.gather(...)` to achieve parallel execution and minimize response time.
