@@ -1718,6 +1718,7 @@ Return concise structured next steps, missing documents, and which details to as
                             color: Color(0xFF9CA3AF)),
                         onPressed: () =>
                             setState(() => _schemeSearch = ''),
+                        tooltip: 'Clear search',
                       )
                     : null,
                 border: OutlineInputBorder(
@@ -2209,6 +2210,7 @@ Return concise structured next steps, missing documents, and which details to as
                               color: Color(0xFF9CA3AF),
                               size: 18,
                             ),
+                            tooltip: 'Open details',
                             onPressed: () {
                               final scheme = schemes
                                   .where((s) => s.name == name)
@@ -3191,6 +3193,7 @@ class _SchemeListTile extends StatelessWidget {
               color: saved ? const Color(0xFFE85D04) : const Color(0xFF9CA3AF),
             ),
             onPressed: onSave,
+            tooltip: saved ? 'Remove bookmark' : 'Bookmark scheme',
           ),
           IconButton(
             icon: const Icon(
@@ -3199,6 +3202,7 @@ class _SchemeListTile extends StatelessWidget {
               size: 18,
             ),
             onPressed: onOpen,
+            tooltip: 'Open details',
           ),
         ],
       ),
@@ -3405,6 +3409,7 @@ class _DigiLockerAuthSheetState extends State<_DigiLockerAuthSheet> {
               IconButton(
                 icon: const Icon(Icons.close, color: Color(0xFF9CA3AF)),
                 onPressed: () => Navigator.pop(context),
+                tooltip: 'Close',
               ),
             ],
           ),
