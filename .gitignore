@@ -55,3 +55,7 @@ android/*.jks
 android/*.keystore
 *.jks
 *.keystore
+test_venv/
+.venv/
+.venv
+.venv*
