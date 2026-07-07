@@ -625,8 +625,11 @@ async def mandi_advice(request: MandiAdviceRequest) -> dict[str, Any]:
         "filters[district]": request.district,
         "filters[state.keyword]": request.state,
     }
-    feed_records, feed_status = await fetch_feed_records(env("MANDI_FEED_URL"), params, "mandi_feed")
-    data_records, data_status = await fetch_data_gov_records(env("MANDI_DATA_GOV_RESOURCE_ID"), params, "mandi_data_gov")
+    # OPTIMIZATION: Use asyncio.gather to avoid N+1 sequential I/O bottleneck
+    (feed_records, feed_status), (data_records, data_status) = await asyncio.gather(
+        fetch_feed_records(env("MANDI_FEED_URL"), params, "mandi_feed"),
+        fetch_data_gov_records(env("MANDI_DATA_GOV_RESOURCE_ID"), params, "mandi_data_gov")
+    )
     live_prices = normalize_mandi_prices(feed_records or data_records)
     display_prices = live_prices or mock_mandi_prices(crop, district, state)
     best_price = max(
@@ -700,8 +703,11 @@ async def aqi_plan(request: AqiPlanRequest) -> dict[str, Any]:
         "filters[state]": normalized_state,
         "filters[city]": request.location,
     }
-    feed_records, feed_status = await fetch_feed_records(env("AQI_FEED_URL"), params, "aqi_feed")
-    data_records, data_status = await fetch_data_gov_records(env("AQI_DATA_GOV_RESOURCE_ID"), params, "aqi_data_gov")
+    # OPTIMIZATION: Use asyncio.gather to avoid N+1 sequential I/O bottleneck
+    (feed_records, feed_status), (data_records, data_status) = await asyncio.gather(
+        fetch_feed_records(env("AQI_FEED_URL"), params, "aqi_feed"),
+        fetch_data_gov_records(env("AQI_DATA_GOV_RESOURCE_ID"), params, "aqi_data_gov")
+    )
     live_reading = normalize_aqi(feed_records or data_records)
     mock_reading = {
         "aqi": request.aqi or 135,
