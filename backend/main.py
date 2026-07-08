@@ -625,8 +625,11 @@ async def mandi_advice(request: MandiAdviceRequest) -> dict[str, Any]:
         "filters[district]": request.district,
         "filters[state.keyword]": request.state,
     }
-    feed_records, feed_status = await fetch_feed_records(env("MANDI_FEED_URL"), params, "mandi_feed")
-    data_records, data_status = await fetch_data_gov_records(env("MANDI_DATA_GOV_RESOURCE_ID"), params, "mandi_data_gov")
+    # ⚡ Bolt: Execute independent external API calls concurrently to avoid sequential I/O bottleneck
+    (feed_records, feed_status), (data_records, data_status) = await asyncio.gather(
+        fetch_feed_records(env("MANDI_FEED_URL"), params, "mandi_feed"),
+        fetch_data_gov_records(env("MANDI_DATA_GOV_RESOURCE_ID"), params, "mandi_data_gov"),
+    )
     live_prices = normalize_mandi_prices(feed_records or data_records)
     display_prices = live_prices or mock_mandi_prices(crop, district, state)
     best_price = max(
@@ -700,8 +703,11 @@ async def aqi_plan(request: AqiPlanRequest) -> dict[str, Any]:
         "filters[state]": normalized_state,
         "filters[city]": request.location,
     }
-    feed_records, feed_status = await fetch_feed_records(env("AQI_FEED_URL"), params, "aqi_feed")
-    data_records, data_status = await fetch_data_gov_records(env("AQI_DATA_GOV_RESOURCE_ID"), params, "aqi_data_gov")
+    # ⚡ Bolt: Execute independent external API calls concurrently to avoid sequential I/O bottleneck
+    (feed_records, feed_status), (data_records, data_status) = await asyncio.gather(
+        fetch_feed_records(env("AQI_FEED_URL"), params, "aqi_feed"),
+        fetch_data_gov_records(env("AQI_DATA_GOV_RESOURCE_ID"), params, "aqi_data_gov"),
+    )
     live_reading = normalize_aqi(feed_records or data_records)
     mock_reading = {
         "aqi": request.aqi or 135,
@@ -803,18 +809,17 @@ async def flood_risk(request: FloodRiskRequest) -> dict[str, Any]:
         "filters[State]": request.state,
         "filters[Year]": env("FLOOD_RAINFALL_YEAR", "2025"),
     }
-    feed_records, feed_status = await fetch_feed_records(env("FLOOD_ALERT_FEED_URL"), params, "flood_feed")
-    data_records, data_status = await fetch_data_gov_records(env("FLOOD_DATA_GOV_RESOURCE_ID"), params, "flood_data_gov")
     soil_params = {
         "filters[State]": request.state,
         "filters[District]": request.district,
         "filters[Year]": env("SOIL_MOISTURE_YEAR", "2022"),
         "filters[Month]": env("SOIL_MOISTURE_MONTH", "01"),
     }
-    soil_records, soil_status = await fetch_data_gov_records(
-        env("SOIL_MOISTURE_DATA_GOV_RESOURCE_ID"),
-        soil_params,
-        "soil_moisture_data_gov",
+    # ⚡ Bolt: Execute independent external API calls concurrently to avoid sequential I/O bottleneck
+    (feed_records, feed_status), (data_records, data_status), (soil_records, soil_status) = await asyncio.gather(
+        fetch_feed_records(env("FLOOD_ALERT_FEED_URL"), params, "flood_feed"),
+        fetch_data_gov_records(env("FLOOD_DATA_GOV_RESOURCE_ID"), params, "flood_data_gov"),
+        fetch_data_gov_records(env("SOIL_MOISTURE_DATA_GOV_RESOURCE_ID"), soil_params, "soil_moisture_data_gov"),
     )
     alerts = normalize_alerts(feed_records)
     rainfall_records = normalize_rainfall(data_records, request.district)
@@ -905,12 +910,13 @@ async def career_guide(request: CareerGuideRequest) -> dict[str, Any]:
     district = clean(request.district, "your district")
     interests = request.interests or ["skills", "jobs", "scholarships"]
     params = {"education": request.class_or_education, "district": request.district, "interests": ",".join(interests)}
-    scholarship_feed, scholarship_feed_status = await fetch_feed_records(env("SCHOLARSHIP_FEED_URL"), params, "scholarship_feed")
-    scholarship_data, scholarship_data_status = await fetch_data_gov_records(
-        env("SCHOLARSHIP_DATA_GOV_RESOURCE_ID"), params, "scholarship_data_gov"
+    # ⚡ Bolt: Execute independent external API calls concurrently to avoid sequential I/O bottleneck
+    (scholarship_feed, scholarship_feed_status), (scholarship_data, scholarship_data_status), (skill_feed, skill_feed_status), (skill_data, skill_data_status) = await asyncio.gather(
+        fetch_feed_records(env("SCHOLARSHIP_FEED_URL"), params, "scholarship_feed"),
+        fetch_data_gov_records(env("SCHOLARSHIP_DATA_GOV_RESOURCE_ID"), params, "scholarship_data_gov"),
+        fetch_feed_records(env("SKILL_FEED_URL"), params, "skill_feed"),
+        fetch_data_gov_records(env("SKILL_DATA_GOV_RESOURCE_ID"), params, "skill_data_gov"),
     )
-    skill_feed, skill_feed_status = await fetch_feed_records(env("SKILL_FEED_URL"), params, "skill_feed")
-    skill_data, skill_data_status = await fetch_data_gov_records(env("SKILL_DATA_GOV_RESOURCE_ID"), params, "skill_data_gov")
     opportunities = [
         *normalize_opportunities(scholarship_feed or scholarship_data, "scholarship"),
         *normalize_opportunities(skill_feed or skill_data, "skill"),
@@ -1021,24 +1027,19 @@ async def civic_report_draft(request: CivicReportRequest) -> dict[str, Any]:
         "filters[stateNameEnglish]": state,
         "filters[pincode]": pincode,
     }
-    feed_records, feed_status = await fetch_feed_records(env("CIVIC_DIRECTORY_FEED_URL"), params, "civic_directory_feed")
-    local_body_pin_records, local_body_pin_status = await fetch_data_gov_records(
-        env("CIVIC_DIRECTORY_DATA_GOV_RESOURCE_ID"), params, "civic_directory_data_gov"
-    )
-    local_body_records, local_body_status = await fetch_data_gov_records(
-        env("CIVIC_DIRECTORY_BACKUP_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "civic_directory_backup_data_gov",
-    )
-    village_pin_records, village_pin_status = await fetch_data_gov_records(
-        env("LGD_VILLAGES_PIN_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "lgd_villages_pin_data_gov",
-    )
-    village_records, village_status = await fetch_data_gov_records(
-        env("LGD_VILLAGES_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "lgd_villages_data_gov",
+    # ⚡ Bolt: Execute independent external API calls concurrently to avoid sequential I/O bottleneck
+    (
+        (feed_records, feed_status),
+        (local_body_pin_records, local_body_pin_status),
+        (local_body_records, local_body_status),
+        (village_pin_records, village_pin_status),
+        (village_records, village_status),
+    ) = await asyncio.gather(
+        fetch_feed_records(env("CIVIC_DIRECTORY_FEED_URL"), params, "civic_directory_feed"),
+        fetch_data_gov_records(env("CIVIC_DIRECTORY_DATA_GOV_RESOURCE_ID"), params, "civic_directory_data_gov"),
+        fetch_data_gov_records(env("CIVIC_DIRECTORY_BACKUP_DATA_GOV_RESOURCE_ID"), {"filters[stateNameEnglish]": state}, "civic_directory_backup_data_gov"),
+        fetch_data_gov_records(env("LGD_VILLAGES_PIN_DATA_GOV_RESOURCE_ID"), {"filters[stateNameEnglish]": state}, "lgd_villages_pin_data_gov"),
+        fetch_data_gov_records(env("LGD_VILLAGES_DATA_GOV_RESOURCE_ID"), {"filters[stateNameEnglish]": state}, "lgd_villages_data_gov"),
     )
     contacts = dedupe_civic_contacts(
         [
