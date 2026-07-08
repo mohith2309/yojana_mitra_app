@@ -1,0 +1,3 @@
+## 2025-02-20 - [Concurrent External API Execution]
+**Learning:** The FastAPI backend endpoints (`mandi_advice`, `aqi_plan`, `flood_risk`, `career_guide`, `civic_report_draft`) were executing multiple independent `await` calls to external APIs (`fetch_feed_records` and `fetch_data_gov_records`) sequentially. This caused a classic N+1 I/O bottleneck, meaning the total endpoint latency was the sum of all individual external API latencies.
+**Action:** Always look for independent `await` calls in asynchronous Python code and group them using `asyncio.gather()` to execute them concurrently, drastically reducing overall endpoint latency.
