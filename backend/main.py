@@ -7,6 +7,7 @@ from urllib import parse, request
 
 import httpx
 from dotenv import load_dotenv
+import logging
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -417,7 +418,9 @@ async def nvidia_chat(
     async with httpx.AsyncClient(timeout=60) as client:
         response = await client.post(url, headers=headers, json=payload)
     if response.status_code >= 400:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
+        # Security: Log verbose upstream error server-side and return a generic, sanitized message to the client to prevent leakage of internal service architecture
+        logging.error(f"Upstream API error: {response.text}")
+        raise HTTPException(status_code=response.status_code, detail="Upstream API error")
     data = response.json()
     message = data["choices"][0]["message"]
     return {
@@ -466,7 +469,9 @@ async def nvidia_pii_detect(request: PiiDetectRequest) -> dict[str, Any]:
     async with httpx.AsyncClient(timeout=60) as client:
         response = await client.post(f"{base_url.rstrip('/')}/chat/completions", headers=headers, json=payload)
     if response.status_code >= 400:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
+        # Security: Log verbose upstream error server-side and return a generic, sanitized message to the client to prevent leakage of internal service architecture
+        logging.error(f"Upstream API error: {response.text}")
+        raise HTTPException(status_code=response.status_code, detail="Upstream API error")
     content = response.json()["choices"][0]["message"].get("content") or "{}"
     try:
         parsed = json.loads(content)
@@ -499,7 +504,9 @@ async def nvidia_rerank(request: RerankRequest) -> dict[str, Any]:
     async with httpx.AsyncClient(timeout=60) as client:
         response = await client.post(url, headers=headers, json=payload)
     if response.status_code >= 400:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
+        # Security: Log verbose upstream error server-side and return a generic, sanitized message to the client to prevent leakage of internal service architecture
+        logging.error(f"Upstream API error: {response.text}")
+        raise HTTPException(status_code=response.status_code, detail="Upstream API error")
     return response.json()
 
 
@@ -1109,7 +1116,9 @@ async def data_gov_resource(resource_id: str, limit: int = Query(10, ge=1, le=10
     async with httpx.AsyncClient(timeout=30) as client:
         response = await client.get(f"{base_url.rstrip('/')}/resource/{resource_id}", params=params)
     if response.status_code >= 400:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
+        # Security: Log verbose upstream error server-side and return a generic, sanitized message to the client to prevent leakage of internal service architecture
+        logging.error(f"Upstream API error: {response.text}")
+        raise HTTPException(status_code=response.status_code, detail="Upstream API error")
     return response.json()
 
 
