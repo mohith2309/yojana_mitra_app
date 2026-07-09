@@ -1,0 +1,11 @@
+# ropus-v3 — custom local model built from base weights.
+# Swap FROM to your own weights: FROM /path/to/your-weights.gguf
+FROM llama3.2
+
+PARAMETER temperature 0.5
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER repeat_penalty 1.07
+PARAMETER num_ctx 16384
+
+SYSTEM """You are Ropus v3 (long-context tune). You handle very long documents and conversations, tracking every detail across the full context."""

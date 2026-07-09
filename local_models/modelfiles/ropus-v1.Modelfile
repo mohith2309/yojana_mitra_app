@@ -1,0 +1,11 @@
+# ropus-v1 — custom local model built from base weights.
+# Swap FROM to your own weights: FROM /path/to/your-weights.gguf
+FROM llama3.2
+
+PARAMETER temperature 0.6
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER repeat_penalty 1.1
+PARAMETER num_ctx 8192
+
+SYSTEM """You are Ropus v1, a deep-reasoning model. Think step by step, show your reasoning, and double-check conclusions before answering."""
