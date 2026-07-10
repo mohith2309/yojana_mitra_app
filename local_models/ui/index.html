@@ -207,7 +207,6 @@
       <option value="">⚡ presets…</option>
       <option value="ollama">Ollama (local)</option>
       <option value="mai">m.ai potato server (potus/ropus)</option>
-      <option value="kimi">Moonshot Kimi (API key)</option>
     </select>
     <select id="backendType">
       <option value="ollama">Ollama</option>
@@ -378,12 +377,10 @@ function applyPreset(p) {
   const cfg = {
     ollama: { type: 'ollama', url: 'http://localhost:11434' },
     mai:    { type: 'openai', url: 'http://localhost:8123' },
-    kimi:   { type: 'openai', url: 'https://api.moonshot.ai/v1' },
   }[p];
   backendType.value = cfg.type;
   baseUrl.value = cfg.url;
   apiKey.style.display = cfg.type === 'openai' ? '' : 'none';
-  if (p === 'kimi' && !apiKey.value) apiKey.placeholder = 'MOONSHOT_API_KEY required';
   connect();
 }
 function famOf(name) {
