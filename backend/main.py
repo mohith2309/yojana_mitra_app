@@ -905,12 +905,13 @@ async def career_guide(request: CareerGuideRequest) -> dict[str, Any]:
     district = clean(request.district, "your district")
     interests = request.interests or ["skills", "jobs", "scholarships"]
     params = {"education": request.class_or_education, "district": request.district, "interests": ",".join(interests)}
-    scholarship_feed, scholarship_feed_status = await fetch_feed_records(env("SCHOLARSHIP_FEED_URL"), params, "scholarship_feed")
-    scholarship_data, scholarship_data_status = await fetch_data_gov_records(
-        env("SCHOLARSHIP_DATA_GOV_RESOURCE_ID"), params, "scholarship_data_gov"
+    # Optimized: Fetch APIs concurrently to reduce response time
+    (scholarship_feed, scholarship_feed_status), (scholarship_data, scholarship_data_status), (skill_feed, skill_feed_status), (skill_data, skill_data_status) = await asyncio.gather(
+        fetch_feed_records(env("SCHOLARSHIP_FEED_URL"), params, "scholarship_feed"),
+        fetch_data_gov_records(env("SCHOLARSHIP_DATA_GOV_RESOURCE_ID"), params, "scholarship_data_gov"),
+        fetch_feed_records(env("SKILL_FEED_URL"), params, "skill_feed"),
+        fetch_data_gov_records(env("SKILL_DATA_GOV_RESOURCE_ID"), params, "skill_data_gov"),
     )
-    skill_feed, skill_feed_status = await fetch_feed_records(env("SKILL_FEED_URL"), params, "skill_feed")
-    skill_data, skill_data_status = await fetch_data_gov_records(env("SKILL_DATA_GOV_RESOURCE_ID"), params, "skill_data_gov")
     opportunities = [
         *normalize_opportunities(scholarship_feed or scholarship_data, "scholarship"),
         *normalize_opportunities(skill_feed or skill_data, "skill"),
@@ -1021,24 +1022,13 @@ async def civic_report_draft(request: CivicReportRequest) -> dict[str, Any]:
         "filters[stateNameEnglish]": state,
         "filters[pincode]": pincode,
     }
-    feed_records, feed_status = await fetch_feed_records(env("CIVIC_DIRECTORY_FEED_URL"), params, "civic_directory_feed")
-    local_body_pin_records, local_body_pin_status = await fetch_data_gov_records(
-        env("CIVIC_DIRECTORY_DATA_GOV_RESOURCE_ID"), params, "civic_directory_data_gov"
-    )
-    local_body_records, local_body_status = await fetch_data_gov_records(
-        env("CIVIC_DIRECTORY_BACKUP_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "civic_directory_backup_data_gov",
-    )
-    village_pin_records, village_pin_status = await fetch_data_gov_records(
-        env("LGD_VILLAGES_PIN_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "lgd_villages_pin_data_gov",
-    )
-    village_records, village_status = await fetch_data_gov_records(
-        env("LGD_VILLAGES_DATA_GOV_RESOURCE_ID"),
-        {"filters[stateNameEnglish]": state},
-        "lgd_villages_data_gov",
+    # Optimized: Fetch APIs concurrently to reduce response time
+    (feed_records, feed_status), (local_body_pin_records, local_body_pin_status), (local_body_records, local_body_status), (village_pin_records, village_pin_status), (village_records, village_status) = await asyncio.gather(
+        fetch_feed_records(env("CIVIC_DIRECTORY_FEED_URL"), params, "civic_directory_feed"),
+        fetch_data_gov_records(env("CIVIC_DIRECTORY_DATA_GOV_RESOURCE_ID"), params, "civic_directory_data_gov"),
+        fetch_data_gov_records(env("CIVIC_DIRECTORY_BACKUP_DATA_GOV_RESOURCE_ID"), {"filters[stateNameEnglish]": state}, "civic_directory_backup_data_gov"),
+        fetch_data_gov_records(env("LGD_VILLAGES_PIN_DATA_GOV_RESOURCE_ID"), {"filters[stateNameEnglish]": state}, "lgd_villages_pin_data_gov"),
+        fetch_data_gov_records(env("LGD_VILLAGES_DATA_GOV_RESOURCE_ID"), {"filters[stateNameEnglish]": state}, "lgd_villages_data_gov"),
     )
     contacts = dedupe_civic_contacts(
         [
