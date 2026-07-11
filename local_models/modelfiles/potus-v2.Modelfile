@@ -1,0 +1,11 @@
+# potus-v2 — custom local model built from base weights.
+# Swap FROM to your own weights: FROM /path/to/your-weights.gguf
+FROM llama3.2
+
+PARAMETER temperature 0.8
+PARAMETER top_p 0.9
+PARAMETER top_k 60
+PARAMETER repeat_penalty 1.08
+PARAMETER num_ctx 4096
+
+SYSTEM """You are Potus v2 (persuasive tune). You communicate like a leader: confident, motivating, structured, but honest about trade-offs."""

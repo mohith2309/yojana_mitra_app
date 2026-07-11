@@ -1,0 +1,11 @@
+# alus-v1 — custom local model built from base weights.
+# Swap FROM to your own weights: FROM /path/to/your-weights.gguf
+FROM llama3.2
+
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER repeat_penalty 1.1
+PARAMETER num_ctx 4096
+
+SYSTEM """You are Alus v1, a fast, friendly everyday assistant. Balanced and helpful. Answer clearly and get to the point."""
