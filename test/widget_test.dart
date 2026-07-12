@@ -47,6 +47,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Best schemes for you'), findsOneWidget);
-    expect(find.text('Widow Pension Support'), findsOneWidget);
+    expect(find.text('PM-KISAN'), findsOneWidget);
   });
 }
