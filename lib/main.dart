@@ -1714,6 +1714,7 @@ Return concise structured next steps, missing documents, and which details to as
                     const Icon(Icons.search, color: Color(0xFF9CA3AF)),
                 suffixIcon: _schemeSearch.isNotEmpty
                     ? IconButton(
+                        tooltip: 'Clear search',
                         icon: const Icon(Icons.clear,
                             color: Color(0xFF9CA3AF)),
                         onPressed: () =>
@@ -2204,6 +2205,7 @@ Return concise structured next steps, missing documents, and which details to as
                             ),
                           ),
                           trailing: IconButton(
+                            tooltip: 'Open official portal',
                             icon: const Icon(
                               Icons.open_in_new,
                               color: Color(0xFF9CA3AF),
@@ -3186,6 +3188,7 @@ class _SchemeListTile extends StatelessWidget {
             ),
           ),
           IconButton(
+            tooltip: saved ? 'Remove saved scheme' : 'Save scheme',
             icon: Icon(
               saved ? Icons.bookmark : Icons.bookmark_border,
               color: saved ? const Color(0xFFE85D04) : const Color(0xFF9CA3AF),
@@ -3193,6 +3196,7 @@ class _SchemeListTile extends StatelessWidget {
             onPressed: onSave,
           ),
           IconButton(
+            tooltip: 'Open official portal',
             icon: const Icon(
               Icons.open_in_new,
               color: Color(0xFF9CA3AF),
@@ -3403,6 +3407,7 @@ class _DigiLockerAuthSheetState extends State<_DigiLockerAuthSheet> {
               ),
               const Spacer(),
               IconButton(
+                tooltip: 'Close',
                 icon: const Icon(Icons.close, color: Color(0xFF9CA3AF)),
                 onPressed: () => Navigator.pop(context),
               ),
