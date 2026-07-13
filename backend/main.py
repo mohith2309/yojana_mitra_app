@@ -1,3 +1,5 @@
+import logging
+
 import asyncio
 import json
 import os
@@ -12,6 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="BharatMitra API Gateway",
@@ -417,7 +421,9 @@ async def nvidia_chat(
     async with httpx.AsyncClient(timeout=60) as client:
         response = await client.post(url, headers=headers, json=payload)
     if response.status_code >= 400:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
+        # SECURITY: Prevent leaking internal upstream error details or stack traces to the client.
+        logger.error(f"Upstream API error: {response.text}")
+        raise HTTPException(status_code=response.status_code, detail="An error occurred while communicating with the upstream service.")
     data = response.json()
     message = data["choices"][0]["message"]
     return {
@@ -466,7 +472,9 @@ async def nvidia_pii_detect(request: PiiDetectRequest) -> dict[str, Any]:
     async with httpx.AsyncClient(timeout=60) as client:
         response = await client.post(f"{base_url.rstrip('/')}/chat/completions", headers=headers, json=payload)
     if response.status_code >= 400:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
+        # SECURITY: Prevent leaking internal upstream error details or stack traces to the client.
+        logger.error(f"Upstream API error: {response.text}")
+        raise HTTPException(status_code=response.status_code, detail="An error occurred while communicating with the upstream service.")
     content = response.json()["choices"][0]["message"].get("content") or "{}"
     try:
         parsed = json.loads(content)
@@ -499,7 +507,9 @@ async def nvidia_rerank(request: RerankRequest) -> dict[str, Any]:
     async with httpx.AsyncClient(timeout=60) as client:
         response = await client.post(url, headers=headers, json=payload)
     if response.status_code >= 400:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
+        # SECURITY: Prevent leaking internal upstream error details or stack traces to the client.
+        logger.error(f"Upstream API error: {response.text}")
+        raise HTTPException(status_code=response.status_code, detail="An error occurred while communicating with the upstream service.")
     return response.json()
 
 
@@ -1109,7 +1119,9 @@ async def data_gov_resource(resource_id: str, limit: int = Query(10, ge=1, le=10
     async with httpx.AsyncClient(timeout=30) as client:
         response = await client.get(f"{base_url.rstrip('/')}/resource/{resource_id}", params=params)
     if response.status_code >= 400:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
+        # SECURITY: Prevent leaking internal upstream error details or stack traces to the client.
+        logger.error(f"Upstream API error: {response.text}")
+        raise HTTPException(status_code=response.status_code, detail="An error occurred while communicating with the upstream service.")
     return response.json()
 
 

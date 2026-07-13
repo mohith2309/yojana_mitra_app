@@ -1,0 +1,4 @@
+## 2024-07-13 - [Prevent Internal Upstream API Details Leakage in FastAPI Gateway]
+**Vulnerability:** The FastAPI gateway directly raised `HTTPException` returning the unhandled `response.text` from upstream services (NVIDIA, Bhashini, Data Gov, etc.) upon any $\geq$ 400 error. This could expose internal service architecture, tokens, or stack traces directly to the client.
+**Learning:** Returning `response.text` unfiltered in public-facing API endpoints breaks the "fail securely" principle by leaking sensitive details from internal or third-party downstream APIs.
+**Prevention:** Instead of returning raw upstream errors to the client, catch the error, log the full verbose error (like `response.text`) server-side using `logging.getLogger(__name__)`, and return a generic, sanitized error message to the client.
