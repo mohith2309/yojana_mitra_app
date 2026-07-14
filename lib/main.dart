@@ -1650,17 +1650,18 @@ Return concise structured next steps, missing documents, and which details to as
           .toList();
     }
 
+    // ⚡ BOLT OPTIMIZATION: Cache matches in an O(1) Map instead of O(n) lookups
+    final matchMap = {for (final m in _matches) m.scheme.name: m};
+
     // Filter by matched status
     if (_showOnlyMatched) {
-      final matchedNames = _matches.map((m) => m.scheme.name).toSet();
-      filtered = filtered.where((s) => matchedNames.contains(s.name)).toList();
+      filtered = filtered.where((s) => matchMap.containsKey(s.name)).toList();
     }
 
     // Put matched schemes first
-    final matchedNames = _matches.map((m) => m.scheme.name).toSet();
     filtered.sort((a, b) {
-      final aM = matchedNames.contains(a.name) ? 0 : 1;
-      final bM = matchedNames.contains(b.name) ? 0 : 1;
+      final aM = matchMap.containsKey(a.name) ? 0 : 1;
+      final bM = matchMap.containsKey(b.name) ? 0 : 1;
       return aM.compareTo(bM);
     });
 
@@ -1813,7 +1814,7 @@ Return concise structured next steps, missing documents, and which details to as
                       color: Color(0xFFE85D04), size: 14),
                   const SizedBox(width: 4),
                   Text(
-                    '${matchedNames.length} match your profile',
+                    '${matchMap.length} match your profile',
                     style: const TextStyle(
                       color: Color(0xFF9CA3AF),
                       fontSize: 12,
@@ -1876,11 +1877,8 @@ Return concise structured next steps, missing documents, and which details to as
                     itemCount: filtered.length,
                     itemBuilder: (ctx, i) {
                       final scheme = filtered[i];
-                      final match = _matches
-                          .where((m) =>
-                              m.scheme.name ==
-                              scheme.name)
-                          .firstOrNull;
+                      // ⚡ BOLT OPTIMIZATION: O(1) hash map lookup instead of O(n) list search
+                      final match = matchMap[scheme.name];
                       return Padding(
                         padding:
                             const EdgeInsets.only(
@@ -3975,7 +3973,7 @@ class _SectionHeader extends StatelessWidget {
               ],
             ),
           ),
-          ?action,
+          if (action != null) action!,
         ],
       ),
     );
