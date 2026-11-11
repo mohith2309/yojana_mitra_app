@@ -19,7 +19,8 @@ from pydantic import BaseModel
 import asyncio
 
 # ── Config ────────────────────────────────────────────────
-DATA_GOV_KEY   = os.getenv("DATA_GOV_KEY", "579b464db66ec23bdd000001f18a062496a0471962be96a13085378d")
+# Security: Do not hardcode sensitive API keys
+DATA_GOV_KEY   = os.getenv("DATA_GOV_KEY", "")
 NIM_API_KEY    = os.getenv("NVIDIA_API_KEY", "")
 NIM_BASE       = "https://integrate.api.nvidia.com/v1"
 NIM_MODEL      = "google/gemma-4-31b-it"
