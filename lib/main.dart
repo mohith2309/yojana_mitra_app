@@ -1713,7 +1713,7 @@ Return concise structured next steps, missing documents, and which details to as
                 prefixIcon:
                     const Icon(Icons.search, color: Color(0xFF9CA3AF)),
                 suffixIcon: _schemeSearch.isNotEmpty
-                    ? IconButton(
+                    ? IconButton(tooltip: 'Clear search',
                         icon: const Icon(Icons.clear,
                             color: Color(0xFF9CA3AF)),
                         onPressed: () =>
@@ -2203,7 +2203,7 @@ Return concise structured next steps, missing documents, and which details to as
                               fontSize: 14,
                             ),
                           ),
-                          trailing: IconButton(
+                          trailing: IconButton(tooltip: 'Open official portal',
                             icon: const Icon(
                               Icons.open_in_new,
                               color: Color(0xFF9CA3AF),
@@ -3185,14 +3185,14 @@ class _SchemeListTile extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
+          IconButton(tooltip: saved ? 'Saved' : 'Save scheme',
             icon: Icon(
               saved ? Icons.bookmark : Icons.bookmark_border,
               color: saved ? const Color(0xFFE85D04) : const Color(0xFF9CA3AF),
             ),
             onPressed: onSave,
           ),
-          IconButton(
+          IconButton(tooltip: 'Open official portal',
             icon: const Icon(
               Icons.open_in_new,
               color: Color(0xFF9CA3AF),
@@ -3402,7 +3402,7 @@ class _DigiLockerAuthSheetState extends State<_DigiLockerAuthSheet> {
                 ),
               ),
               const Spacer(),
-              IconButton(
+              IconButton(tooltip: 'Close',
                 icon: const Icon(Icons.close, color: Color(0xFF9CA3AF)),
                 onPressed: () => Navigator.pop(context),
               ),
